@@ -38,7 +38,7 @@ $CFG->minpasswordlower = {MIN_LOWERCASE};
 $CFG->minpasswordupper = {MIN_UPPERCASE};
 $CFG->minpasswordnonalphanum = {MIN_NONALPHA};
 $CFG->maxconsecutiveidentchars = {MAX_CONSECUTIVE};
-$CFG->passwordreuselimit = {MIN_ROTAIONREUSE};
+$CFG->passwordreuselimit = {MIN_ROTATIONREUSE};
 $CFG->passwordchangelogout = {PASSWORD_FORCELOGOUT};
 
 $CFG->lockoutthreshold = {LOCKOUT_THRESHOLD};
