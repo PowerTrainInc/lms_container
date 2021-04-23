@@ -54,6 +54,11 @@ $CFG->cookiehttponly = {HTTP_ONLY_COOKIES};
 
 $CFG->passwordsaltmain = 'loi0Dlcyo2riKMh3MVQ)Pe?]d';
 
+@error_reporting(E_ALL | E_STRICT);   // NOT FOR PRODUCTION SERVERS!
+@ini_set('display_errors', '1');         // NOT FOR PRODUCTION SERVERS!
+$CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!
+$CFG->debugdisplay = 1;              // NOT FOR PRODUCTION SERVERS!
+
 require_once(dirname(__FILE__) . '/lib/setup.php');
 
 // There is no php closing tag in this file,
