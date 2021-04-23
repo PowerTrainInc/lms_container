@@ -20,7 +20,7 @@ $CFG->dboptions = array (
 
 $CFG->wwwroot   = '{SITE_URL}';
 $CFG->dataroot  = '{SITE_MOODLEDATA}';
-$CFG->admin     = 'admin';
+$CFG->admin     = '{SITE_ADMIN}';
 
 $CFG->directorypermissions = 0770;
 

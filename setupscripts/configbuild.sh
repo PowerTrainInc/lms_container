@@ -8,6 +8,7 @@ sed -i -e "s/{DB_TYPE}/$DB_TYPE/g" /var/www/html/config.php
 
 sed -i -e "s/{SITE_URL}/$SITE_URL/g" /var/www/html/config.php
 sed -i -e "s/{SITE_MOODLEDATA}/$SITE_MOODLEDATA/g" /var/www/html/config.php
+sed -i -e "s/{SITE_ADMIN}/$SITE_ADMIN/g" /var/www/html/config.php
 
 sed -i -e "s/{PASSWORD_POLICY}/$PASSWORD_POLICY/g" /var/www/html/config.php
 sed -i -e "s/{PASSWORD_LENGTH}/$PASSWORD_LENGTH/g" /var/www/html/config.php
