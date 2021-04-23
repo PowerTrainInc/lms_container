@@ -16,7 +16,7 @@ sed -i -e "s/{MIN_LOWERCASE}/$MIN_LOWERCASE/g" /var/www/html/config.php
 sed -i -e "s/{MIN_UPPERCASE}/$MIN_UPPERCASE/g" /var/www/html/config.php
 sed -i -e "s/{MIN_NONALPHA}/$MIN_NONALPHA/g" /var/www/html/config.php
 sed -i -e "s/{MAX_CONSECUTIVE}/$MAX_CONSECUTIVE/g" /var/www/html/config.php
-sed -i -e "s/{MIN_ROTATIONREUSE}/$MIN_ROTAIONREUSE/g" /var/www/html/config.php
+sed -i -e "s/{MIN_ROTATIONREUSE}/$MIN_ROTATIONREUSE/g" /var/www/html/config.php
 sed -i -e "s/{PASSWORD_FORCELOGOUT}/$PASSWORD_FORCELOGOUT/g" /var/www/html/config.php
 
 sed -i -e "s/{LOCKOUT_THRESHOLD}/$LOCKOUT_THRESHOLD/g" /var/www/html/config.php
