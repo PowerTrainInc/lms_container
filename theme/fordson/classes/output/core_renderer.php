@@ -58,7 +58,7 @@ class core_renderer extends \theme_boost\output\core_renderer {
         return $setting <= 4 ? true : false;
     }
     public function full_header() {
-        global $PAGE, $COURSE;
+        global $PAGE, $COURSE, $course;
         $theme = theme_config::load('fordson');
         $pagelayout = $theme->settings->pagelayout;
         $header = new stdClass();
@@ -80,14 +80,25 @@ class core_renderer extends \theme_boost\output\core_renderer {
         $header->pageheadingbutton = $this->page_heading_button();
         $header->courseheader = $this->course_header();
         $header->headerimage = $this->headerimage();
+        $header->headeractions = $this->page->get_header_actions();
+
+        if (theme_fordson_get_setting('jitsibuttontext') && $PAGE->pagelayout == 'course') {
+            $jitsibuttonurl = $theme->settings->jitsibuttonurl;
+            $jitsibuttontext = $theme->settings->jitsibuttontext;
+            $header->jitsi = '<a class="btn btn-primary" href=" ' . $jitsibuttonurl . '/' . $course->id .' ' . $course->fullname . '" target="_blank"> <i class="fa fa-video-camera jitsivideoicon" aria-hidden="true"></i><span class="jistibuttontext">
+' . $jitsibuttontext . ' </span></a>';
+        }
+        
         return $this->render_from_template('theme_fordson/header', $header);
     }
+    
     public function image_url($imagename, $component = 'moodle') {
         // Strip -24, -64, -256  etc from the end of filetype icons so we
         // only need to provide one SVG, see MDL-47082.
         $imagename = \preg_replace('/-\d\d\d?$/', '', $imagename);
         return $this->page->theme->image_url($imagename, $component);
     }
+
     public function headerimage() {
         global $CFG, $COURSE, $PAGE, $OUTPUT;
         // Get course overview files.
@@ -185,6 +196,9 @@ class core_renderer extends \theme_boost\output\core_renderer {
             // Use the default theme image when no course image is detected.
             return $this->image_url('noimg', 'theme')->out();
         }
+    }
+    public function edit_button(moodle_url $url) {
+        return '';
     }
 
     public function edit_button_fhs() {
@@ -778,7 +792,7 @@ class core_renderer extends \theme_boost\output\core_renderer {
 
         $logintoken = \core\session\manager::get_login_token();
 
-        $fp_wonderboxcontext = ['logintoken' => $logintoken, 'hasfptextbox' => (!empty($PAGE->theme->settings->fptextbox && isloggedin())) , 'fptextbox' => $fptextbox, 'hasslidetextbox' => (!empty($PAGE->theme->settings->slidetextbox && isloggedin())) , 'slidetextbox' => $slidetextbox, 'hasfptextboxlogout' => !isloggedin() , 'fptextboxlogout' => $fptextboxlogout, 'hasshowloginform' => $PAGE->theme->settings->showloginform, 'hasalert' => (!empty($PAGE->theme->settings->alertbox && isloggedin())) , 'alertbox' => $alertbox, 'hasmarkettiles' => ($hasmarketing1 || $hasmarketing2 || $hasmarketing3 || $hasmarketing4 || $hasmarketing5 || $hasmarketing6) ? true : false, 'markettiles' => array(
+        $fp_wonderboxcontext = ['logintoken' => $logintoken, 'hasfptextbox' => (!empty($PAGE->theme->settings->fptextbox && isloggedin())) , 'fptextbox' => $fptextbox, 'hasslidetextbox' => (!empty($PAGE->theme->settings->slidetextbox && isloggedin())) , 'slidetextbox' => $slidetextbox, 'hasfptextboxlogout' => !isloggedin() , 'fptextboxlogout' => $fptextboxlogout, 'hasshowloginform' => $PAGE->theme->settings->showloginform, 'alertbox' => $alertbox, 'hasmarkettiles' => ($hasmarketing1 || $hasmarketing2 || $hasmarketing3 || $hasmarketing4 || $hasmarketing5 || $hasmarketing6) ? true : false, 'markettiles' => array(
             array(
                 'hastile' => $hasmarketing1,
                 'tileimage' => $marketing1image,
@@ -1368,6 +1382,10 @@ class core_renderer extends \theme_boost\output\core_renderer {
         $eventmonitoringlink = new moodle_url('/admin/tool/monitor/managerules.php', array(
             'courseid' => $PAGE->course->id
         ));
+        $copycoursetitle = get_string('copycourse', 'moodle');
+        $copycourselink = new moodle_url('/backup/copy.php', array(
+            'id' => $PAGE->course->id
+        ));
 
         // Student Dash
         if (\core_completion\progress::get_course_progress_percentage($PAGE->course)) {
@@ -1648,6 +1666,11 @@ class core_renderer extends \theme_boost\output\core_renderer {
                     'hascoursemanagelinks' => $courseadmintitle,
                     'title' => $courseadmintitle,
                     'url' => $courseadminlink
+                ) ,
+                array(
+                    'hascoursemanagelinks' => $copycoursetitle,
+                    'title' => $copycoursetitle,
+                    'url' => $copycourselink
                 ) ,
                 array(
                     'hascoursemanagelinks' => $courseresettitle,

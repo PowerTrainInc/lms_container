@@ -1,7 +1,7 @@
 moodle-theme_boost_campus
 =========================
 
-[![Build Status](https://travis-ci.org/moodleuulm/moodle-theme_boost_campus.svg?branch=master)](https://travis-ci.org/moodleuulm/moodle-theme_boost_campus)
+[![Moodle Plugin CI](https://github.com/moodleuulm/moodle-theme_boost_campus/workflows/Moodle%20Plugin%20CI/badge.svg?branch=MOODLE_39_STABLE)](https://github.com/moodleuulm/moodle-theme_boost_campus/actions?query=workflow%3A%22Moodle+Plugin+CI%22+branch%3AMOODLE_39_STABLE)
 
 Moodle Boost child theme which is intended to meet the needs of university campuses and adds several features and improvements
 
@@ -9,7 +9,7 @@ Moodle Boost child theme which is intended to meet the needs of university campu
 Requirements
 ------------
 
-This plugin requires Moodle 3.8+
+This plugin requires Moodle 3.9+
 
 
 Motivation for this theme
@@ -115,15 +115,26 @@ This setting will catch the "Ctrl + Arrow down" shortcut (Windows), prevent the 
 
 With this setting you can manage where the "Add a block" widget should be displayed. "At the bottom of the nav drawer" means the widget to add new blocks is displayed in the left sliding navigation panel like in theme Boost. "At the bottom of the default block region" means the widget to add new blocks will be displayed in the default block region.
 
+##### Boost Campus "Back to top" button
+
+Since Moodle 3.9, a "Go to top" button was integrated into theme Boost and usually that would make our provided solution obsolete.
+However, the core solution has still some little itches and that is the reason why we would like to provide the Boost Campus "Back to top" button as an optional setting.
+If you enable this setting, the core "Go to top" button will not be displayed and instead the Boost Campus "Back to top" button will occur. The differences are:
+
+* Smooth scolling: Boost Campus "Back to top" button uses smooth scrolling whilst the core "Go to top" button jumps directly to the top.
+* URL implications: Boost Campus "Back to top" button only uses Javascript and has no implication to the URL whilst the core "Go to top" button adds a "#" at the end of the URL by clicking the button. If you copy the URL the "#" will be copied along.
+* Styling: The styling of both buttons differ.
+* Accessibility: Boost Campus "Back to top" button is not improved in terms of accessibility whilst the core "Go to top" button is.
+
+Please note:
+
+This setting will be removed as soon a the core feature is improved so that no individual theme solution is needed anymore.';
+
 ### 3. Tab "Course Layout Settings"
 
 #### Section 0: Title
 
 This setting can change the behaviour Moodle displays the title for the first course section. Moodle does not display it as long as the default title for this section is set. As soon as a user changes the title, it will appear. With this setting (option is checked), you can achieve a consistent behaviour by always showing the title for section 0.
-
-#### Course edit button
-
-With this setting you can add an additional course edit on / off button to the course header for faster accessibility. This the same way as it was displayed before theme_boost.
 
 #### Course related hints
 
@@ -139,9 +150,9 @@ With this setting a hint will appear in the course header as long as the visibil
 
 With this setting a hint will appear in the course header when a user is accessing it with the guest access feature. If the course provides an active self enrolment, a link to that page is also presented to the user.
 
-##### Show hint for unrestricted self enrolment
+##### Show hint for self enrolment without enrolment key
 
-With this setting a hint will appear in the course header when the course is visible and a unrestricted (no enrolment key or end date is set) self enrolment is active.
+With this setting a hint will appear in the course header if the course is visible and an enrolment without enrolment key is currently possible.
 
 #### Course settings
 
@@ -335,7 +346,7 @@ For this reason, with this setting you can decide that the help texts should be 
 ##### Change breakpoint
 
 In theme Boost, the right block column will break down even on devices with a width up to 1200 pixels (widescreen resolution of the iPad is 1024 pixels, for example).
-This is because the breakpoint is set to [media-breakpoint-down(lg)](https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints").
+This is because the breakpoint is set to [media-breakpoint-down(lg)](https://getbootstrap.com/docs/4.5/layout/overview/#responsive-breakpoints").
 
 If you think there is enough space to show the content plus the blocks column side by side on a screen width of 992 pixels and up, then enable this setting. It will change the breakpoint to media-breakpoint-down(md). This will break the blocks column only on screens with widths of less than 992 pixels.
 
@@ -518,11 +529,13 @@ We are always interested to read about your feature proposals or even get a pull
 Moodle release support
 ----------------------
 
-Due to limited resources, this plugin is only maintained for the most recent major release of Moodle. However, previous versions of this plugin which work in legacy major releases of Moodle are still available as-is without any further updates in the Moodle Plugins repository.
+Due to limited resources, this plugin is only maintained for the most recent major release of Moodle as well as the most recent LTS release of Moodle. Bugfixes are backported to the LTS release. However, new features and improvements are not necessarily backported to the LTS release.
 
-There may be several weeks after a new major release of Moodle has been published until we can do a compatibility check and fix problems if necessary. If you encounter problems with a new major release of Moodle - or can confirm that this plugin still works with a new major relase - please let us know on Github.
+Apart from these maintained releases, previous versions of this plugin which work in legacy major releases of Moodle are still available as-is without any further updates in the Moodle Plugins repository.
 
-If you are running a legacy version of Moodle, but want or need to run the latest version of this plugin, you can get the latest version of the plugin, remove the line starting with $plugin->requires from version.php and use this latest plugin version then on your legacy Moodle. However, please note that you will run this setup completely at your own risk. We can't support this approach in any way and there is a undeniable risk for erratic behavior.
+There may be several weeks after a new major release of Moodle has been published until we can do a compatibility check and fix problems if necessary. If you encounter problems with a new major release of Moodle - or can confirm that this plugin still works with a new major release - please let us know on Github.
+
+If you are running a legacy version of Moodle, but want or need to run the latest version of this plugin, you can get the latest version of the plugin, remove the line starting with $plugin->requires from version.php and use this latest plugin version then on your legacy Moodle. However, please note that you will run this setup completely at your own risk. We can't support this approach in any way and there is an undeniable risk for erratic behavior.
 
 
 Translating this plugin

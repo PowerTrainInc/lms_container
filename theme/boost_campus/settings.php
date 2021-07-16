@@ -60,7 +60,7 @@ if ($ADMIN->fulltree) {
     $choices['default.scss'] = 'default.scss';
     $choices['plain.scss'] = 'plain.scss';
 
-    $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);
+    $setting = new admin_setting_configthemepreset($name, $title, $description, $default, $choices, 'boost_campus');
     $setting->set_updatedcallback('theme_reset_all_caches');
     $page->add($setting);
 
@@ -226,6 +226,19 @@ if ($ADMIN->fulltree) {
     $setting->set_updatedcallback('theme_reset_all_caches');
     $page->add($setting);
 
+    // Settings title for "Back to top" button. We don't need a description here.
+    $name = 'theme_boost_campus/bcbttbuttonheading';
+    $title = get_string('bcbttbuttonheadingsetting', 'theme_boost_campus', null, true);
+    $setting = new admin_setting_heading($name, $title, null);
+    $page->add($setting);
+
+    // Setting enabling the Boost Campus version of the "Back to top" button.
+    $name = 'theme_boost_campus/bcbttbutton';
+    $title = get_string('bcbttbuttonsetting', 'theme_boost_campus', null, true);
+    $description = get_string('bcbttbuttonsetting_desc', 'theme_boost_campus', null, true);
+    $setting = new admin_setting_configcheckbox($name, $title, $description, 0);
+    $page->add($setting);
+
     // Add tab to settings page.
     $settings->add($page);
 
@@ -243,13 +256,6 @@ if ($ADMIN->fulltree) {
         // yes = 1 and no = 0 because of the use of empty() in theme_boost_campus_get_pre_scss() (lib.php). Default 0 value would
         // not write the variable to scss that could cause the scss to crash if used in that file. See MDL-58376.
     $setting->set_updatedcallback('theme_reset_all_caches');
-    $page->add($setting);
-
-    // Setting for displaying edit on / off button addionally in course header.
-    $name = 'theme_boost_campus/courseeditbutton';
-    $title = get_string('courseeditbuttonsetting', 'theme_boost_campus', null, true);
-    $description = get_string('courseeditbuttonsetting_desc', 'theme_boost_campus', null, true);
-    $setting = new admin_setting_configcheckbox($name, $title, $description, 0);
     $page->add($setting);
 
     // Settings title for grouping course settings related aspects together. We don't need a description here.
@@ -724,7 +730,9 @@ if ($ADMIN->fulltree) {
     // Select the bootstrap class that should be used for the perpetual info banner.
     $name = 'theme_boost_campus/perpibcss';
     $title = get_string('perpibcsssetting', 'theme_boost_campus', null, true);
-    $description = get_string('perpibcsssetting_desc', 'theme_boost_campus', null, true);
+    $description = get_string('perpibcsssetting_desc', 'theme_boost_campus', null, true).'<br />'.
+            get_string('ibcsssetting_nobootstrap', 'theme_boost_campus',
+                   array('bootstrapnone' => get_string('bootstrapnone', 'theme_boost_campus')));
     $perpibcssoptions = [
             // Don't use string lazy loading (= false) because the string will be directly used and would produce a
             // PHP warning otherwise.
@@ -735,7 +743,8 @@ if ($ADMIN->fulltree) {
             'warning' => get_string('bootstrapwarningcolor', 'theme_boost_campus', null, false),
             'info' => get_string('bootstrapinfocolor', 'theme_boost_campus', null, false),
             'light' => get_string('bootstraplightcolor', 'theme_boost_campus', null, false),
-            'dark' => get_string('bootstrapdarkcolor', 'theme_boost_campus', null, false)
+            'dark' => get_string('bootstrapdarkcolor', 'theme_boost_campus', null, false),
+            'none' => get_string('bootstrapnone', 'theme_boost_campus', null, false)
     ];
     $setting = new admin_setting_configselect($name, $title, $description, $perpibcssoptions['primary'],
             $perpibcssoptions);
@@ -818,7 +827,9 @@ if ($ADMIN->fulltree) {
     // Select the bootstrap class that should be used for the perpetual info banner.
     $name = 'theme_boost_campus/timedibcss';
     $title = get_string('timedibcsssetting', 'theme_boost_campus', null, true);
-    $description = get_string('timedibcsssetting_desc', 'theme_boost_campus', null, true);
+    $description = get_string('timedibcsssetting_desc', 'theme_boost_campus', null, true).'<br />'.
+            get_string('ibcsssetting_nobootstrap', 'theme_boost_campus',
+                    array('bootstrapnone' => get_string('bootstrapnone', 'theme_boost_campus')));
     $timedibcssoptions = [
         // Don't use string lazy loading (= false) because the string will be directly used and would produce a
         // PHP warning otherwise.
@@ -829,7 +840,8 @@ if ($ADMIN->fulltree) {
             'warning' => get_string('bootstrapwarningcolor', 'theme_boost_campus', null, false),
             'info' => get_string('bootstrapinfocolor', 'theme_boost_campus', null, false),
             'light' => get_string('bootstraplightcolor', 'theme_boost_campus', null, false),
-            'dark' => get_string('bootstrapdarkcolor', 'theme_boost_campus', null, false)
+            'dark' => get_string('bootstrapdarkcolor', 'theme_boost_campus', null, false),
+            'none' => get_string('bootstrapnone', 'theme_boost_campus', null, false)
     ];
     $setting = new admin_setting_configselect($name, $title, $description, $timedibcssoptions['primary'],
             $timedibcssoptions);
@@ -837,7 +849,7 @@ if ($ADMIN->fulltree) {
     $settings->hide_if('theme_boost_campus/timedibcss',
             'theme_boost_campus/timedibenable', 'notchecked');
 
-    // This will check for the desired date time format YYYY-MM-DD HH:MM:SS
+    // This will check for the desired date time format YYYY-MM-DD HH:MM:SS.
     $timeregex = '/(20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])\s([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])|^$/';
 
     // Start time for controlled information banner.

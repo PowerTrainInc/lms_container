@@ -342,7 +342,17 @@ class element extends \mod_customcert\element {
             // Get the page.
             $page = $DB->get_record('customcert_pages', array('id' => $this->get_pageid()), '*', MUST_EXIST);
             // Get the customcert this page belongs to.
-            $customcert = $DB->get_record('customcert', array('templateid' => $page->templateid), '*', MUST_EXIST);
+            $module_id = optional_param('id', 0, PARAM_INT);
+			
+			if ($module_id > 0) {
+				$course = $DB->get_record('course_modules', array('id' => $module_id), 'course', MUST_EXIST);
+				
+				$customcert = $DB->get_record('customcert', 
+					array('templateid' => $page->templateid, 'course' => $course->course), '*', MUST_EXIST);
+			} else {
+				$customcert = $DB->get_record('customcert', array('templateid' => $page->templateid), '*', MUST_EXIST);
+			}
+			
             // Now we can get the issue for this user.
             $issue = $DB->get_record('customcert_issues', array('userid' => $user->id, 'customcertid' => $customcert->id),
                 '*', MUST_EXIST);

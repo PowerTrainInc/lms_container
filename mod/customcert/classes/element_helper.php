@@ -374,21 +374,28 @@ class element_helper {
      * @return int The course id
      */
     public static function get_courseid($elementid) {
-        global $DB, $SITE;
+        global $DB, $SITE, $COURSE; // Customization -- added $COURSE
 
-        $sql = "SELECT course
-                  FROM {customcert} c
+		// Customization -- added c.id to $sql so first column would be unique
+        $sql = "
+			SELECT c.id, 
+				course
+            FROM {customcert} c
             INNER JOIN {customcert_pages} cp
-                    ON c.templateid = cp.templateid
+                ON c.templateid = cp.templateid
             INNER JOIN {customcert_elements} ce
-                    ON cp.id = ce.pageid
-                 WHERE ce.id = :elementid";
+                ON cp.id = ce.pageid
+            WHERE ce.id = :elementid
+		";
+
+		$count = $DB->get_records_sql($sql, array('elementid' => $elementid));
 
         // Check if there is a course associated with this element.
-        if ($course = $DB->get_record_sql($sql, array('elementid' => $elementid))) {
+        if (sizeof($count) == 1 && $course = $DB->get_record_sql($sql, array('elementid' => $elementid))) {
             return $course->course;
         } else { // Must be in a site template.
-            return $SITE->id;
+            //return $SITE->id;
+			return $COURSE->id; // Customization
         }
     }
 

@@ -94,8 +94,10 @@ function customcert_delete_instance($id) {
         return false;
     }
 
+	$context = context_module::instance($cm->id);
+
     // Now, delete the template associated with this certificate.
-    if ($template = $DB->get_record('customcert_templates', array('id' => $customcert->templateid))) {
+    if ($template = $DB->get_record('customcert_templates', array('contextid' => $context->id))) {
         $template = new \mod_customcert\template($template);
         $template->delete();
     }
@@ -106,7 +108,7 @@ function customcert_delete_instance($id) {
     }
 
     // Delete any files associated with the customcert.
-    $context = context_module::instance($cm->id);
+    //$context = context_module::instance($cm->id);
     $fs = get_file_storage();
     $fs->delete_area_files($context->id);
 
@@ -263,6 +265,8 @@ function customcert_supports($feature) {
         case FEATURE_GROUPINGS:
             return true;
         case FEATURE_MOD_INTRO:
+            return true;
+        case FEATURE_SHOW_DESCRIPTION:
             return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return true;

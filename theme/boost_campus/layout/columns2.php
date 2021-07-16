@@ -79,6 +79,10 @@ if (get_config('theme_boost_campus', 'darknavbar') == 'yes') {
 $navdrawerfullwidth = get_config('theme_boost_campus', 'navdrawerfullwidth');
 // MODIFICATION END.
 
+// MODIFICATION START: Setting 'bcbttbutton'.
+$bcbttbutton = get_config('theme_boost_campus', 'bcbttbutton');
+// MODIFICATION END.
+
 // MODIFICATION START: Set these variables in any case as it's needed in the columns2.mustache file.
 $perpinfobannershowonselectedpage = false;
 $timedinfobannershowonselectedpage = false;
@@ -98,7 +102,8 @@ $templatecontext = [
     'navdrawerfullwidth' => $navdrawerfullwidth,
     'darknavbar' => $darknavbar,
     'perpinfobannershowonselectedpage' => $perpinfobannershowonselectedpage,
-    'timedinfobannershowonselectedpage' => $timedinfobannershowonselectedpage
+    'timedinfobannershowonselectedpage' => $timedinfobannershowonselectedpage,
+    'bcbttbutton' => $bcbttbutton
     // MODIFICATION END.
 ];
 
@@ -106,7 +111,8 @@ $templatecontext = [
 $perpibenable = get_config('theme_boost_campus', 'perpibenable');
 
 if ($perpibenable) {
-    $perpibcontent = format_text(get_config('theme_boost_campus', 'perpibcontent'), FORMAT_HTML);
+    $formatoptions = array('noclean' => true, 'newlines' => false);
+    $perpibcontent = format_text(get_config('theme_boost_campus', 'perpibcontent'), FORMAT_HTML, $formatoptions);
     // Result of multiselect is a string divided by a comma, so exploding into an array.
     $perpibshowonpages = explode(",", get_config('theme_boost_campus', 'perpibshowonpages'));
     $perpibcss = get_config('theme_boost_campus', 'perpibcss');
@@ -119,7 +125,9 @@ if ($perpibenable) {
 
     // Add the variables to the templatecontext array.
     $templatecontext['perpibcontent'] = $perpibcontent;
-    $templatecontext['perpibcss'] = $perpibcss;
+    if ($perpibcss != 'none') {
+        $templatecontext['perpibcss'] = $perpibcss;
+    }
     $templatecontext['perpibdismiss'] = $perpibdismiss;
     $templatecontext['perpinfobannershowonselectedpage'] = $perpinfobannershowonselectedpage;
     $templatecontext['perbibconfirmdialogue'] = $perbibconfirmdialogue;
@@ -130,7 +138,8 @@ if ($perpibenable) {
 $timedibenable = get_config('theme_boost_campus', 'timedibenable');
 
 if ($timedibenable) {
-    $timedibcontent = format_text(get_config('theme_boost_campus', 'timedibcontent'), FORMAT_HTML);
+    $formatoptions = array('noclean' => true, 'newlines' => false);
+    $timedibcontent = format_text(get_config('theme_boost_campus', 'timedibcontent'), FORMAT_HTML, $formatoptions);
     // Result of multiselect is a string divided by a comma, so exploding into an array.
     $timedibshowonpages = explode(",", get_config('theme_boost_campus', 'timedibshowonpages'));
     $timedibcss = get_config('theme_boost_campus', 'timedibcss');
@@ -144,7 +153,9 @@ if ($timedibenable) {
 
     // Add the variables to the templatecontext array.
     $templatecontext['timedibcontent'] = $timedibcontent;
-    $templatecontext['timedibcss'] = $timedibcss;
+    if ($timedibcss != 'none') {
+        $templatecontext['timedibcss'] = $timedibcss;
+    }
     $templatecontext['timedinfobannershowonselectedpage'] = $timedinfobannershowonselectedpage;
 }
 // MODIFICATION END.
@@ -153,8 +164,8 @@ $nav = $PAGE->flatnav;
 // MODIDFICATION START.
 // Use the returned value from theme_boost_campus_get_modified_flatnav_defaulthomepageontop as the template context.
 $templatecontext['flatnavigation'] = theme_boost_campus_process_flatnav($nav);
-// If setting showsettingsincourse is enabled.
-if (get_config('theme_boost_campus', 'showsettingsincourse') == 'yes') {
+// If setting showsettingsincourse is enabled and we are not on the content bank view page (contentbank/view.php).
+if (get_config('theme_boost_campus', 'showsettingsincourse') == 'yes' && $PAGE->bodyid != 'page-contentbank') {
     // Context value for requiring incoursesettings.js.
     $templatecontext['incoursesettings'] = true;
     // Add the returned value from theme_boost_campus_get_incourse_settings to the template context.
@@ -163,9 +174,11 @@ if (get_config('theme_boost_campus', 'showsettingsincourse') == 'yes') {
     $templatecontext['activitynode'] = theme_boost_campus_get_incourse_activity_settings();
 }
 // MODIFICATION END.
+// @codingStandardsIgnoreStart
 /* ORIGINAL START.
 $templatecontext['flatnavigation'] = $nav;
 ORIGINAL END. */
+// @codingStandardsIgnoreEnd
 
 $templatecontext['firstcollectionlabel'] = $nav->get_collectionlabel();
 
@@ -180,6 +193,8 @@ require_once(__DIR__ . '/includes/footnote.php');
 // Render columns2.mustache from boost_campus.
 echo $OUTPUT->render_from_template('theme_boost_campus/columns2', $templatecontext);
 // MODIFICATION END.
+// @codingStandardsIgnoreStart
 /* ORIGINAL START.
 echo $OUTPUT->render_from_template('theme_boost/columns2', $templatecontext);
 ORIGINAL END. */
+// @codingStandardsIgnoreEnd

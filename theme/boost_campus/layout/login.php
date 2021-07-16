@@ -48,7 +48,8 @@ $templatecontext = [
 $perpibenable = get_config('theme_boost_campus', 'perpibenable');
 
 if ($perpibenable) {
-    $perpibcontent = format_text(get_config('theme_boost_campus', 'perpibcontent'), FORMAT_HTML);
+    $formatoptions = array('noclean' => true, 'newlines' => false);
+    $perpibcontent = format_text(get_config('theme_boost_campus', 'perpibcontent'), FORMAT_HTML, $formatoptions);
     // Result of multiselect is a string divided by a comma, so exploding into an array.
     $perpibshowonpages = explode(",", get_config('theme_boost_campus', 'perpibshowonpages'));
     $perpibcss = get_config('theme_boost_campus', 'perpibcss');
@@ -58,7 +59,9 @@ if ($perpibenable) {
 
     // Add the variables to the templatecontext array.
     $templatecontext['perpibcontent'] = $perpibcontent;
-    $templatecontext['perpibcss'] = $perpibcss;
+    if ($perpibcss != 'none') {
+        $templatecontext['perpibcss'] = $perpibcss;
+    }
     $templatecontext['perpinfobannershowonselectedpage'] = $perpinfobannershowonselectedpage;
 }
 // MODIFICATION END.
@@ -67,7 +70,8 @@ if ($perpibenable) {
 $timedibenable = get_config('theme_boost_campus', 'timedibenable');
 
 if ($timedibenable) {
-    $timedibcontent = format_text(get_config('theme_boost_campus', 'timedibcontent'), FORMAT_HTML);
+    $formatoptions = array('noclean' => true, 'newlines' => false);
+    $timedibcontent = format_text(get_config('theme_boost_campus', 'timedibcontent'), FORMAT_HTML, $formatoptions);
     // Result of multiselect is a string divided by a comma, so exploding into an array.
     $timedibshowonpages = explode(",", get_config('theme_boost_campus', 'timedibshowonpages'));
     $timedibcss = get_config('theme_boost_campus', 'timedibcss');
@@ -81,7 +85,9 @@ if ($timedibenable) {
 
     // Add the variables to the templatecontext array.
     $templatecontext['timedibcontent'] = $timedibcontent;
-    $templatecontext['timedibcss'] = $timedibcss;
+    if ($timedibcss != 'none') {
+        $templatecontext['timedibcss'] = $timedibcss;
+    }
     $templatecontext['timedinfobannershowonselectedpage'] = $timedinfobannershowonselectedpage;
 }
 // MODIFICATION END.
@@ -97,6 +103,8 @@ require_once(__DIR__ . '/includes/footnote.php');
 // Render own template.
 echo $OUTPUT->render_from_template('theme_boost_campus/login', $templatecontext);
 // MODIFICATION END.
+// @codingStandardsIgnoreStart
 /* ORIGINAL START.
 echo $OUTPUT->render_from_template('theme_boost/login', $templatecontext);
 ORIGINAL END. */
+// @codingStandardsIgnoreEnd

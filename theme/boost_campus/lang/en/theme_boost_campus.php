@@ -62,14 +62,26 @@ $string['catchctrlarrowdownsetting'] = 'Ctrl + Arrow down shortcut';
 $string['catchctrlarrowdownsetting_desc'] = 'This setting will catch the "Ctrl + Arrow down" shortcut (Windows),';
 $string['catchkeys_desc_addition'] = 'prevent the default scrolling to the bottom of the web page and changes the behavior to scroll only to the bottom of the main course content.';
 
+// ..."Back to top" button.
+$string['bcbttbuttonheadingsetting'] = 'Boost Campus "Back to top" button';
+$string['bcbttbuttonsetting'] = 'Boost Campus "Back to top" button';
+$string['bcbttbuttonsetting_desc'] = 'Since Moodle 3.9, a "Go to top" button was integrated into theme Boost and usually that would make our provided solution obsolete.<br/>
+However, the core solution has still some little itches and that is the reason why we would like to provide the Boost Campus "Back to top" button as an optional setting. <br/>
+If you enable this setting, the core "Go to top" button will not be displayed and instead the Boost Campus "Back to top" button will occur. The differences are:<br/>
+<ul>
+<li>Smooth scolling: Boost Campus "Back to top" button uses smooth scrolling whilst the core "Go to top" button jumps directly to the top.</li>
+<li>URL implications: Boost Campus "Back to top" button only uses Javascript and has no implication to the URL whilst the core "Go to top" button adds a "#" at the end of the URL by clicking the button. If you copy the URL the "#" will be copied along.</li>
+<li>Styling: The styling of both buttons differ.</li>
+<li>Accessibility: Boost Campus "Back to top" button is not improved in terms of accessibility whilst the core "Go to top" button is.</li>
+</ul>
+Please note:<br/>
+This setting will be removed as soon a the core feature is improved so that no individual theme solution is needed anymore.';
+
 // Course layout settings.
 $string['courselayoutsettings'] = 'Course Layout Settings';
 // ...Section 0.
 $string['section0titlesetting'] = 'Section 0: Title';
 $string['section0titlesetting_desc'] = 'This setting can change the behaviour Moodle displays the title for the first course section. Moodle does not display it as long as the default title for this section is set. As soon as a user changes the title, it will appear. With this setting (option is checked), you can achieve a consistent behaviour by always showing the title for section 0.';
-// ...Course edit button.
-$string['courseeditbuttonsetting'] = 'Course edit button';
-$string['courseeditbuttonsetting_desc'] = 'With this setting you can add an additional course edit on / off button to the course header for faster accessibility of this often used function.';
 // ...Course related hints.
 $string['coursehintsheadingsetting'] = 'Course related hints.';
 // ...Switch role information.
@@ -90,8 +102,8 @@ $string['showhintcoursehiddensetting_desc'] = 'With this setting a hint will app
 $string['showhintcoursguestaccesssetting'] = 'Show hint for guest access';
 $string['showhintcourseguestaccesssetting_desc'] = 'With this setting a hint will appear in the course header when a user is accessing it with the guest access feature. If the course provides an active self enrolment, a link to that page is also presented to the user.';
 // ... Show hint for unrestricted self enrolment.
-$string['showhintcourseselfenrolsetting'] = 'Show hint for unrestricted self enrolment';
-$string['showhintcourseselfenrolsetting_desc'] = 'With this setting a hint will appear in the course header when the course is visible and a unrestricted (no enrolment key or end date is set) self enrolment is active.';
+$string['showhintcourseselfenrolsetting'] = 'Show hint for self enrolment without enrolment key';
+$string['showhintcourseselfenrolsetting_desc'] = 'With this setting a hint will appear in the course header if the course is visible and an enrolment without enrolment key is currently possible.';
 // ...Course settings.
 $string['coursesettingsheadingsetting'] = 'Course settings';
 // ...Show course settings within the course.
@@ -142,17 +154,15 @@ $string['imageareaheadingsetting_desc'] = 'The following settings allow adding a
 $string['imageareaitemssetting'] = 'Image area items';
 $string['imageareaitemssetting_desc'] = 'With this widget you can upload your images that will be displayed in the additional image area region. The images will be sorted and displayed alphabetically by the filename. To remove this region, simply delete all uploaded images.';
 $string['imageareaitemsattributessetting'] = 'Image area item additional attributes';
-$string['imageareaitemsattributessetting_desc'] = 'With this optional setting you can add additional attributes to your uplaoded images:
+$string['imageareaitemsattributessetting_desc'] = 'With this optional setting you can add additional attributes to your uploaded images:
 <ul>
 <li>a link</li>
 <li>an alt attribute which describes the image</li>
 </ul>
 Each line consists of the file identifier (the file name) the link URL and the alt-text, separated by pipe characters. Each link declaration needs to be written in a new line. <br/>
 For example:<br/>
-```
-moodle.jpg|https://moodle.org|Moodle logo
-```<br/><br/>
-You can declare the additional attributes for an arbitrary amount of your uplaoded images. The attributes will be added only to those images that match their filename with the identifier declared in this setting.';
+<code>moodle.jpg|https://moodle.org|Moodle logo</code><br/><br/>
+You can declare the additional attributes for an arbitrary amount of your uploaded images. The attributes will be added only to those images that match their filename with the identifier declared in this setting.';
 $string['imageareaitemsmaxheightsetting'] = 'Image area items maximal height';
 $string['imageareaitemsmaxheightsetting_desc'] = 'With this setting you can change the height in pixels for your uploaded images. All images will have the same maximum height and their width will be resized proportionally. The default value is set to 100 pixels.';
 // ...Footnote.
@@ -216,7 +226,7 @@ For this reason, with this setting you can decide that the help texts should be 
 $string['breakpointheadingsetting'] = 'Breakpoint';
 $string['breakpointsetting'] = 'Change breakpoint';
 $string['breakpointsetting_desc'] = 'In theme Boost, the right block column will break down even on devices with a width up to 1200 pixels (widescreen resolution of the iPad is 1024 pixels, for example).
-This is because the breakpoint is set to <a href="https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints">media-breakpoint-down(lg)</a>. <br/>
+This is because the breakpoint is set to <a href="https://getbootstrap.com/docs/4.5/layout/overview/#responsive-breakpoints">media-breakpoint-down(lg)</a>. <br/>
 If you think there is enough space to show the content plus the blocks column side by side on a screen width of 992 pixels and up, then enable this setting. It will change the breakpoint to media-breakpoint-down(md). This will break the blocks column only on screens with widths of less than 992 pixels.';
 // ...Additional resources.
 $string['additionalresourcesheadingsetting'] = 'Additional resources';
@@ -273,6 +283,9 @@ $string['timedibendsetting_desc'] = 'With this setting you can define when the t
 <br/>Please enter a valid date in this format: YYYY-MM-DD HH:MM:SS. For example: "2020-01-07 08:00:00. The time zone will be the time zone you have defined in the setting "Default timezone".
 <br/>If you leave this setting empty but entered a date in the for the start, the banner won\'t hide after the starting time has been reached.';
 
+// ...General information banner.
+$string['ibcsssetting_nobootstrap'] = 'If you choose the \'{$a->bootstrapnone}\' option, the information banner will be output without any particular Bootstrap color.';
+
 // ADDITIONAL STRINGS (IN ALPHABETICAL ORDER).
 $string['backtotop'] = 'Back to top';
 $string['bootstrapprimarycolor'] = 'Primary color';
@@ -283,6 +296,7 @@ $string['bootstrapwarningcolor'] = 'Warning color';
 $string['bootstrapinfocolor'] = 'Info color';
 $string['bootstraplightcolor'] = 'Light color';
 $string['bootstrapdarkcolor'] = 'Dark color';
+$string['bootstrapnone'] = 'No Bootstrap color';
 $string['cachedef_imagearea'] = 'Cache for imagearea items';
 $string['close'] = 'Close';
 $string['confirmation'] = 'Confirmation';
@@ -299,9 +313,15 @@ $string['showhintcourseguestaccessgeneral'] = 'You are currently viewing this co
 $string['showhintcourseguestaccesslink'] = 'To have full access to the course, you can <a href="{$a->url}">self enrol into this course</a>.';
 $string['showhintcoursehiddengeneral'] = 'This course is currently <strong>hidden</strong>. Only enrolled teachers can access this course when hidden.';
 $string['showhintcoursehiddensettingslink'] = 'You can change the visibility in the <a href="{$a->url}">course settings</a>.';
-$string['showhintcourseselfenrol'] = 'This course is currently visible and an <strong>unrestricted self enrolment</strong> is active: <strong>"{$a->name}"</strong>. <br/>
-This means, that neither an enrolment key nor a self enrolment end date is set.';
-$string['showhintcourseselfenrollink'] = 'If you don\'t want that any Moodle user can enrol into this course freely, please restrict the settings for this self enrolment instance in the <a href="{$a->url}">enrolment settings</a>.';
+$string['showhintcourseselfenrolstartcurrently'] = 'This course is currently visible and <strong>self enrolment without enrolment key</strong> is currently possible.';
+$string['showhintcourseselfenrolstartfuture'] = 'This course is currently visible and <strong>self enrolment without enrolment key</strong> is planned to become possible.';
+$string['showhintcourseselfenrolunlimited'] = 'The <strong>{$a->name}</strong> enrolment instance allows unrestricted self enrolment infinitely.';
+$string['showhintcourseselfenroluntil'] = 'The <strong>{$a->name}</strong> enrolment instance allows unrestricted self enrolment until {$a->until}.';
+$string['showhintcourseselfenrolfrom'] = 'The <strong>{$a->name}</strong> enrolment instance allows unrestricted self enrolment from {$a->from} on.';
+$string['showhintcourseselfenrolsince'] = 'The <strong>{$a->name}</strong> enrolment instance allows unrestricted self enrolment currently.';
+$string['showhintcourseselfenrolfromuntil'] = 'The <strong>{$a->name}</strong> enrolment instance allows unrestricted self enrolment from {$a->from} until {$a->until}.';
+$string['showhintcourseselfenrolsinceuntil'] = 'The <strong>{$a->name}</strong> enrolment instance allows unrestricted self enrolment until {$a->until}.';
+$string['showhintcourseselfenrolinstancecallforaction'] = 'If you don\'t want that any Moodle user can enrol into this course freely, please restrict the self enrolment settings.';
 $string['switchroleto'] = 'Switch role to';
 $string['yes_close'] = "Yes, close!";
 
