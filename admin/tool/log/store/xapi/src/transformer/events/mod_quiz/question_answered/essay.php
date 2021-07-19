@@ -31,10 +31,6 @@ function essay(array $config, \stdClass $event, \stdClass $questionattempt, \std
 
     $responsesummary = is_null($questionattempt->responsesummary) ? '' : $questionattempt->responsesummary;
 
-    // $json_pretty_string = json_encode('essay'.$questionattempt->rightanswer, JSON_PRETTY_PRINT);
-    // error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
-
-
     return [[
         'actor' => utils\get_user($config, $user),
         'verb' => [
@@ -54,6 +50,7 @@ function essay(array $config, \stdClass $event, \stdClass $questionattempt, \std
                     $lang => utils\get_string_html_removed($question->questiontext)
                 ],
                 'interactionType' => 'long-fill-in',
+                // "correctResponsesPattern" => [$questionattempt->rightanswer]
             ]
         ],
         'timestamp' => utils\get_event_timestamp($event),

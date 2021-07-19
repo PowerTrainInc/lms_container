@@ -33,6 +33,7 @@ defined('MOODLE_INTERNAL') || die();
 function scormengine_supports($feature) {
     switch ($feature) {
         case FEATURE_COMPLETION_HAS_RULES: return true;
+        case FEATURE_NO_VIEW_LINK: return false;
         case FEATURE_GRADE_HAS_GRADE: return true;
         case FEATURE_MOD_INTRO:
             return true;
@@ -145,6 +146,39 @@ function se_get($url)
     return $obj;
 }
 
+function se_delete($url)
+{
+    $settings = get_config('scormengine');
+    $ch = curl_init($url);
+    console_log("GET ".$settings->endpoint."/RusticiEngine/api/v2".$url);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_URL, $settings->endpoint."/RusticiEngine/api/v2".$url);
+    curl_setopt($ch, CURLOPT_DELETE, 1);
+    $verbose = fopen('php://temp', 'rw+');
+
+    curl_setopt($ch, CURLOPT_STDERR , $verbose);
+    curl_setopt($ch, CURLOPT_VERBOSE  , TRUE);
+
+    $headers = array(
+        'Authorization: Basic '. base64_encode($settings->username.':'.$settings->password),
+        'engineTenantName: default'
+    );
+    console_log($headers);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+    $result = curl_exec($ch);
+    !rewind($verbose);
+    curl_close($ch);
+    console_log('CURL result:');
+    console_log($result);
+    console_log(htmlspecialchars(stream_get_contents($verbose)));
+
+    $obj = json_decode($result);
+    return $obj;
+}
+
 function uuid(){
     $data = random_bytes(16);
     $data[6] = chr(ord($data[6]) & 0x0f | 0x40); 
@@ -156,7 +190,7 @@ function se_postJSON($url,$body)
 {
     $data_string = json_encode($body);
     $settings = get_config('scormengine');
-    $ch = curl_init(url);
+    $ch = curl_init($url);
     console_log("POST ".$settings->endpoint."/RusticiEngine/api/v2".$url);
     console_log($body);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -194,9 +228,9 @@ function se_postFile($url,$filename,$filepath)
 {
    
     $settings = get_config('scormengine');
-    $ch = curl_init(url);
+    $ch = curl_init($url);
     console_log("POST ".$settings->endpoint."/RusticiEngine/api/v2".$url);
-    console_log($body);
+    
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_URL, $settings->endpoint."/RusticiEngine/api/v2".$url);
@@ -208,21 +242,21 @@ function se_postFile($url,$filename,$filepath)
     curl_setopt($ch, CURLOPT_POST, 1);
 
     $metadata = array(
-        title=>  $filename,
-        titleLanguage=> 'string',
-        description=> 'string',
-        descriptionLanguage=> 'string',
-        duration=> 'string',
-        typicalTime=> 'string',
-        keywords=> json_decode('{}'),
-        pluginSpecificMetadata=> json_decode('{}')
+        "title"=>  $filename,
+        "titleLanguage"=> 'string',
+        "description"=> 'string',
+        "descriptionLanguage"=> 'string',
+        "duration"=> 'string',
+        "typicalTime"=> 'string',
+        "keywords"=> json_decode('{}'),
+        "pluginSpecificMetadata"=> json_decode('{}')
     );
     $formData = [
         // Pass a simple key-value pair
-        contentMetadata=> json_encode($metadata),
+        "contentMetadata"=> json_encode($metadata),
         // Pass data via Buffers
         // Pass data via Streams
-        file=> new CurlFile($filepath, 'application/zip', $filename)
+        "file"=> new CurlFile($filepath, 'application/zip', $filename)
 
     ];
 
@@ -249,7 +283,7 @@ function se_postFile($url,$filename,$filepath)
 }
 
 function console_log($output, $with_script_tags = true) {
-    return;
+   return;
     $js_code = 'console.log(' . json_encode($output, JSON_HEX_TAG) . 
 ');';
     if ($with_script_tags) {

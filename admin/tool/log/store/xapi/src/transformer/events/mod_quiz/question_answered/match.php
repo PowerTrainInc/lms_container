@@ -79,8 +79,7 @@ function match(array $config, \stdClass $event, \stdClass $questionattempt, \std
             );
     }, $parsedResponse, $indexes);
   
-
-    // $json_pretty_string = json_encode($responsePattern, JSON_PRETTY_PRINT);
+    // $json_pretty_string = json_encode('numerical'.$questionattempt, JSON_PRETTY_PRINT);
     // error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
 
     $cResponsePattern = substr_replace($responsePattern, '', $responsePattern.length - 3);

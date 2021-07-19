@@ -88,7 +88,7 @@ if($results->registrationCompletion == 'COMPLETED')
 if($results->registrationSuccess == 'PASSED')
     $existingReg->success = 1;
 $existingReg->duration = $results->totalSecondsTracked;
-$existingReg->progress = $results->registrationCompletionAmount * 100;
+$existingReg->progress = floor($results->registrationCompletionAmount * 100);
 
 if(isset($results->score->scaled))
 {
@@ -100,6 +100,8 @@ $button = "<pre>".json_encode($results, JSON_PRETTY_PRINT)."</pre>";
 $button2 = "<pre>".json_encode($existingReg, JSON_PRETTY_PRINT)."</pre>";
 
 $settings = get_config('scormengine');
+
+send_xapi_statements_from_seo(null, $results, $settings->lrs_endpoint, $settings->lrs_username, $settings->lrs_password);
 
 if($results->registrationCompletion == 'COMPLETED' && !$wasAlreadyCompleted)
 { 
@@ -122,7 +124,6 @@ if($results->registrationCompletion == 'COMPLETED')
         $grade->userid = $USER->id;
         $grade->usermodified = $USER->id;
 
-
         if (!function_exists('grade_update')) { //workaround for buggy PHP versions
             require_once($CFG->libdir.'/gradelib.php');
         }
@@ -132,12 +133,10 @@ if($results->registrationCompletion == 'COMPLETED')
             $params['grademax']  = 100;
             $params['grademin']  = 0;
 
-
         grade_update('mod/scormengine', $moduleinstance->course, 'mod', 'scormengine', $grade->yourmodule_id, 0, $grade, $params);
     }
 }
 
-send_xapi_statements_from_seo(null, $results, $settings->lrs_endpoint, $settings->lrs_username, $settings->lrs_password);
 // $settings = get_config('scormengine');
 // header("Location: {$settings->site_home}/course/view.php?id=".$course->id."#section-0");
 redirect($settings->site_home.'/course/view.php?id='.$course->id.'#section-0');

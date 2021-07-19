@@ -21,6 +21,8 @@ defined('MOODLE_INTERNAL') || die();
 use src\transformer\utils as utils;
 
 function gapselect(array $config, \stdClass $event, \stdClass $questionattempt, \stdClass $question) {
+    global $DB;
+
     $repo = $config['repo'];
     $user = $repo->read_record_by_id('user', $event->relateduserid);
     $course = $repo->read_record_by_id('course', $event->courseid);
@@ -29,6 +31,32 @@ function gapselect(array $config, \stdClass $event, \stdClass $questionattempt, 
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
     $lang = utils\get_course_lang($course);
     $selections = explode('} {', rtrim(ltrim($questionattempt->responsesummary, '{'), '}'));
+
+    $answers = $repo->read_records('question_answers', [
+        'question' => $questionattempt->questionid
+    ]);
+
+    $choicesids = array_map(function ($item){
+        return array(
+            'id' => (intval($item->id) < 10) ? 'choice0'.$item->id : 'choice'.$item->id,
+            'description' => utils\get_string_html_removed($item->answer)
+        );
+    }, $answers);
+
+    $responesPattern = array_reduce(
+        $selections, 
+        function ($reduction, $selection) use($choicesids) {
+            foreach($choicesids as $choice) {
+                $v = utils\get_value($choice, 'description');
+                if(strtoupper($v) === strtoupper($selection)) {                           
+                    $selectionkey = utils\get_value($choice, 'id');
+                }
+            }
+            $reduction = $reduction.$selectionkey.'[,]';
+            return $reduction;
+        }, '');
+
+    $responesPattern = utils\str_replace_last('[,]', '', $responesPattern);
 
     $stmnt = [[
         'actor' => utils\get_user($config, $user),
@@ -44,7 +72,8 @@ function gapselect(array $config, \stdClass $event, \stdClass $questionattempt, 
         ],
         'timestamp' => utils\get_event_timestamp($event),
         'result' => [
-            'response' => implode ('[,]', $selections),
+            'response' => $responesPattern,
+            'success' => $questionattempt->rightanswer == $questionattempt->responsesummary,
             'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false,
         ],
         'context' => [
@@ -67,9 +96,9 @@ function gapselect(array $config, \stdClass $event, \stdClass $questionattempt, 
         ]
     ]];
 
-    if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-        $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    }
+    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+    // }
 
     return $stmnt;
 }

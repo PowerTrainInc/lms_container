@@ -43,4 +43,13 @@ if ($ADMIN->fulltree) {
           "The LRS API Key username", ''));
      $settings->add(new admin_setting_configtext('scormengine/lrs_password', "LRS API Key Password",
           "The LRS API Key password", ''));
+     $settings->add(new admin_setting_configtext('scormengine/bulk_api_key', "Secret Key",
+     "A secret needed to access this tool programmatically", ''));
+     $settings->add(new admin_setting_configtext('scormengine/launchPrefix', "Launch Prefix",
+     "A prefix value to prepend to the Scorm Engine launch links", ''));
+
+     $settings->add(new admin_setting_configcheckbox('scormengine/restrictToUser', "Restrict To User",
+     "Users will only be able to select packages they uploaded themselves", '0'));
+
+     
 }

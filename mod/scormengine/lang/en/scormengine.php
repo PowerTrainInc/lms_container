@@ -30,6 +30,8 @@ $string['pluginname'] = 'Rustici Engine';
 $string['scormenginename'] = 'Activity Name';
 $string['modulename'] = 'Rustici Engine Player';
 $string['scormenginefieldset'] = 'Package Choice';
+$string['modulenameplural'] = 'Rustici Engine Packages';
 $string['upload'] = 'upload';
 $string['upload'] = 'upload';
-$string['upload'] = 'upload';
+$string['pluginadministration'] = 'Admin';
+

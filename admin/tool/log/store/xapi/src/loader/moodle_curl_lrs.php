@@ -53,5 +53,5 @@ function load(array $config, array $events) {
             throw new \Exception($responsetext, $responsecode);
         }
     };
-    return utils\load_in_batches($config, $events, $sendhttpstatements);
+    return count($events) > 0 ? utils\load_in_batches($config, $events, $sendhttpstatements) : null;
 }

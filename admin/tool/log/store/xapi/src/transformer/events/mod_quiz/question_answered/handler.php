@@ -20,31 +20,43 @@ defined('MOODLE_INTERNAL') || die();
 
 use src\transformer\utils as utils;
 
+
 function handler(array $config, \stdClass $event, \stdClass $questionattempt) {
     $repo = $config['repo'];
     $question = $repo->read_record_by_id('question', $questionattempt->questionid);
 
+    // utils\log_to_error_file($question->qtype, 'question type');
+    // utils\log_to_error_file($questionattempt, 'questionattempt');
     switch ($question->qtype) {
         case 'essay':
-            return essay($config, $event, $questionattempt, $question);
-        case 'ddwtos':
+            return essay($config, $event, $questionattempt, $question);       
         case 'gapselect':
             return gapselect($config, $event, $questionattempt, $question);
         case 'truefalse':
             return truefalse($config, $event, $questionattempt, $question);
-        case 'randomsamatch':
-            return randomsamatch($config, $event, $questionattempt, $question);
+        // case 'randomsamatch':
+        //     return randomsamatch($config, $event, $questionattempt, $question);
         case 'shortanswer':
-            return shortanswer($config, $event, $questionattempt, $question);
-        case 'match':
-            return match($config, $event, $questionattempt, $question);
-        case 'ddwtos':
-            return multichoice($config, $event, $questionattempt, $question, 'ddwtos');
+            return shortanswer($config, $event, $questionattempt, $question);        
         case 'multichoice':
-        case 'multichoiceset':
+        case 'multichoiceset':        
             return multichoice($config, $event, $questionattempt, $question);
+        case 'calculatedmulti':
+            return calculatedmulti($config, $event, $questionattempt, $question);
+        case 'calculated':
+        case 'calculatedsimple':        
         case 'numerical':
             return numerical($config, $event, $questionattempt, $question);
+        // case 'ddmarker':
+        //     return ddmarker($config, $event, $questionattempt, $question);
+        case 'ddimageortext':
+            return ddimageortext($config, $event, $questionattempt, $question);
+        case 'ddwtos':
+            return ddwtos($config, $event, $questionattempt, $question);
+        case 'match':
+            return matching($config, $event, $questionattempt, $question);
+        case 'multianswer':
+            return multianswer($config, $event, $questionattempt, $question);
         default:
             return [];
     }

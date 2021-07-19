@@ -69,7 +69,7 @@ console_log($USER);
 
 $button = '';
 $settings = get_config('scormengine');
-$existingReg = $DB->get_record('scormengine_registration', array('course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $USER->id, 'package_id'=>$moduleinstance->package_id ), '*', IGNORE_MISSING);
+$existingReg = $DB->get_record('scormengine_registration', array("completion" => 0, 'course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $USER->id, 'package_id'=>$moduleinstance->package_id ), '*', IGNORE_MISSING);
 if( $existingReg == false)
 {
    
@@ -90,6 +90,12 @@ if( $existingReg == false)
             "redirectOnExitUrl" => $settings->site_home.'/mod/scormengine/return.php?rid='.$uuid.'&id='.$id
             )
         ));
+
+    if(!$launchLink)
+    {
+        echo "There was an error connecting to Scorm Engine.";
+        return;
+    }
     $newReg = array(
         'course_id' => $course->id, 
         'mod_id' => $moduleinstance->id, 
@@ -109,7 +115,7 @@ if( $existingReg == false)
 
     $button = "<a  class='btn btn-raised btn-primary' href='"
         .$settings->site_home.'/mod/scormengine/xapi_initialize.php?rid='.$uuid
-        .'&courselink='.urlencode($settings->endpoint.$launchLink->launchLink)."'>Start</a>";
+        .'&courselink='.urlencode($settings->launchPrefix.$launchLink->launchLink)."'>Start</a>";
 
     array('course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $USER->id );
 } else {
@@ -118,14 +124,21 @@ if( $existingReg == false)
         "redirectOnExitUrl" => $settings->site_home.'/mod/scormengine/return.php?rid='.$existingReg->registration.'&id='.$id  
     ));
 
+    if(!$launchLink)
+    {
+        echo "There was an error connecting to Scorm Engine.";
+        return;
+    }
+    
     if ($existingReg->completion == -1)
-        $button = "<a class='btn btn-raised btn-primary' href='".$settings->endpoint.$launchLink->launchLink."' >Start</a>";
+        $button = "<a class='btn btn-raised btn-primary' href='".$settings->launchPrefix.$launchLink->launchLink."' >Start</a>";
     else
-        $button = "<a class='btn btn-raised btn-primary' href='".$settings->endpoint.$launchLink->launchLink."' >Resume</a>";
+        $button = "<a class='btn btn-raised btn-primary' href='".$settings->launchPrefix.$launchLink->launchLink."' >Resume</a>";
 
 }
 
 echo $OUTPUT->header();
-
+echo '<h1>'.format_string($moduleinstance->name).'</h1>';
+echo '<p>'.format_string($moduleinstance->intro).'</p>';
 echo $button;
 echo $OUTPUT->footer();

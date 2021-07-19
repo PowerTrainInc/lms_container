@@ -15,59 +15,68 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace src\transformer\utils;
+
 use src\transformer\utils as utils;
+
 defined('MOODLE_INTERNAL') || die();
 
 function get_multichoice_definition(array $config, \stdClass $questionattempt, \stdClass $question, $lang, $interactiontype = 'choice') {
-    // if ($config['send_response_choices']) {
-        $repo = $config['repo'];
-        $answers = $repo->read_records('question_answers', [
-            'question' => $questionattempt->questionid
-        ]);
-        $choices = array_map(function ($answer) use ($lang) {
-            return [
-                "id" => "$answer->id",
-                "description" => [
-                    $lang => utils\get_string_html_removed($answer->answer)
-                ]
-            ];
-        }, $answers);
 
-        $correctresponsepattern;
-        switch ($interactiontype) {
-            case 'sequencing':
-                $selections = explode('} {', rtrim(ltrim($questionattempt->rightanswer, '{'), '}'));
-                $correctresponsepattern = implode ('[,]', $selections);
-                break;
-            default:
-                $selections = explode('; ', utils\get_string_html_removed($questionattempt->rightanswer));
-                $correctresponsepattern = implode ('[,]', $selections);
-                break;
-        }
+    // if ($config['send_response_choices']) {
+    $repo = $config['repo'];
+    $formattedRightAnswer = $interactiontype === 'choice' ?
+        explode('; ', utils\get_string_html_removed($questionattempt->rightanswer)) :
+        explode('} {', rtrim(ltrim($questionattempt->rightanswer, '{'), '}'));
+
+    $answers = $repo->read_records('question_answers', [
+        'question' => $questionattempt->questionid
+    ]);
+    
+    $choicesids = array_map(function ($item) {
+        return array(
+            'id' => 'choice'.$item->id,
+            'description' => utils\get_string_html_removed($item->answer)
+        );
+    }, $answers);
+
+    $choices = array_map(function ($answer) use ($lang) {
+        $formattedAnswer = utils\get_string_html_removed($answer->answer);
 
         return [
-            'type' => 'http://adlnet.gov/expapi/activities/cmi.interaction',
-            'name' => [
-                $lang => utils\get_string_html_removed($question->name)
-            ],
-            'description' => [
-                $lang => utils\get_string_html_removed($question->questiontext)
-            ],
-            'interactionType' => $interactiontype === 'sequencing' ? 'choice' : $interactiontype,
-            'correctResponsesPattern' => [$correctresponsepattern],
-            // Need to pull out id's that are appended during array_map so json parses it correctly as an array.
-            'choices' => array_values($choices)
+            "id" => "choice".$answer->id,
+            "description" => [
+                $lang => $formattedAnswer
+            ]
         ];
-    // }
+    }, $answers);
 
-    // return [
-    //     'type' => 'http://adlnet.gov/expapi/activities/cmi.interaction',
-    //     'name' => [
-    //         $lang => utils\get_string_html_removed($question->name)
-    //     ],
-    //     'description' => [
-    //         $lang => utils\get_string_html_removed($question->questiontext)
-    //     ],
-    //     'interactionType' => $interactiontype
-    // ];
+    $correctResponesPattern = array_reduce(
+        $formattedRightAnswer,
+        function ($reduction, $selection) use ($choicesids) {
+            foreach ($choicesids as $choice) {
+                $v = utils\get_value($choice, 'description');
+                if (strtoupper($v) === strtoupper($selection)) {
+                    $selectionkey = utils\get_value($choice, 'id');
+                }
+            }
+            $reduction = $reduction . $selectionkey . '[,]';
+            return $reduction;
+        },
+        ''
+    );
+    $correctResponesPattern = [utils\str_replace_last('[,]', '', $correctResponesPattern)];
+
+    return [
+        'type' => 'http://adlnet.gov/expapi/activities/cmi.interaction',
+        'name' => [
+            $lang => utils\get_string_html_removed($question->name)
+        ],
+        'description' => [
+            $lang => utils\get_string_html_removed($question->questiontext)
+        ],
+        'interactionType' => $interactiontype,
+        'correctResponsesPattern' => $correctResponesPattern,
+        // Need to pull out id's that are appended during array_map so json parses it correctly as an array.
+        'choices' => array_values($choices)
+    ];
 }

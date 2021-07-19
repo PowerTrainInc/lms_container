@@ -20,7 +20,11 @@ defined('MOODLE_INTERNAL') || die();
 
 use src\transformer\utils as utils;
 
-function randomsamatch(array $config, \stdClass $event, \stdClass $questionattempt, \stdClass $question) {
+// Question type not supported since multiple questions can be in one question making it hard to 
+// to have analytics on each question.
+
+function randomsamatch(array $config, \stdClass $event, \stdClass $questionattempt, \stdClass $question)
+{
     $repo = $config['repo'];
     $user = $repo->read_record_by_id('user', $event->relateduserid);
     $course = $repo->read_record_by_id('course', $event->courseid);
@@ -28,23 +32,80 @@ function randomsamatch(array $config, \stdClass $event, \stdClass $questionattem
     $quiz = $repo->read_record_by_id('quiz', $attempt->quiz);
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
     $lang = utils\get_course_lang($course);
-    $selections = array_reduce(
-        explode('; ', $questionattempt->responsesummary),
-        function ($reduction, $selection) {
-            $split = explode("\n -> ", $selection);
-            if (count($split) > 1) {
-                $selectionkey = $split[0];
-                $selectionvalue = $split[1];
-                $reduction = $reduction.$selectionkey.'[.]'.$selectionvalue.'[,]';
-            }
-            return $reduction;
-        },
-        ''
-    );
+    
+    $qsplit = explode(' -> ', $questionattempt->responsesummary);
+    $questions = explode(': ', $qsplit[0]);
+    $questions = explode(';', str_replace(array('{','}'), '', $questions[1]));
+    $answers = explode(';', str_replace(array('{','}'), '', $qsplit[1]));
 
-    // $json_pretty_string = json_encode(substr_replace($selections, '', $selections.length - 3), JSON_PRETTY_PRINT);
-    // error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
-    $formattedResult = substr_replace($selections, '', $selections.length - 3);
+    
+    $responseAnswer = explode(';', $questionattempt->responsesummary);
+    $responseParsed = array();
+    
+    $source = array();
+    $target = array();
+    
+    for ($i = 0; $i < count($responseAnswer); $i++) {
+        $answer = explode(' -> ', $responseAnswer[$i]);
+        array_push($responseParsed, $answer[1]);
+    }
+
+    // $selections = array_reduce(
+    //     explode('; ', $questionattempt->responsesummary),
+    //     function ($reduction, $selection) {
+    //         $split = explode("\n -> ", $selection);
+    //         if (count($split) > 1) {
+    //             $selectionkey = trim($split[0]);
+    //             $selectionvalue = $split[1];
+    //             $reduction = $reduction . $selectionkey . '[.]' . $selectionvalue . '[,]';
+    //         }
+    //         return $reduction;
+    //     },
+    //     ''
+    // );
+
+    // $parsedResponse = explode('; ', $questionattempt->rightanswer);
+    // $indexes = array_keys($parsedResponse);
+
+    // $responsePattern = array_reduce(
+    //     $parsedResponse,
+    //     function ($reduction, $selection) {
+    //         $split = explode("\n -> ", $selection);
+    //         if (count($split) > 1) {
+    //             $selectionkey = trim($split[0]);
+    //             $selectionvalue = $split[1];
+    //             $reduction = $reduction . $selectionkey . '[.]' . $selectionvalue . '[,]';
+    //         }
+    //         return $reduction;
+    //     },
+    //     ''
+    // );
+
+    // $source = array_map(function ($item, $index) use ($lang) {
+    //     $split = explode("\n -> ", $item);
+    //     return array(
+    //         'id' => strval($index + 1),
+    //         'description' => [
+    //             $lang => trim($split[0])
+    //         ]
+    //     );
+    // }, $parsedResponse, $indexes);
+
+    // $target = array_map(function ($item, $index) use ($lang) {
+    //     $split = explode("\n -> ", $item);
+    //     return array(
+    //         'id' => strval($index + 1),
+    //         'description' => [
+    //             $lang => trim($split[1])
+    //         ]
+    //     );
+    // }, $parsedResponse, $indexes);
+
+    // utils\log_to_error_file($questionattempt, 'questionattempt');
+
+
+    // $cResponsePattern = substr_replace($responsePattern, '', count($responsePattern) - 3);
+    // $formattedResult = substr_replace($selections, '', count($selections) - 3);
 
     $stmnt = [[
         'actor' => utils\get_user($config, $user),
@@ -55,7 +116,7 @@ function randomsamatch(array $config, \stdClass $event, \stdClass $questionattem
             ],
         ],
         'object' => [
-            'id' => 'https://navy.mil/netc/xapi/activities/cmi.interactions/'.$question->id,
+            'id' => 'https://navy.mil/netc/xapi/activities/cmi.interactions/' . $question->id,
             'definition' => [
                 'type' => 'http://adlnet.gov/expapi/activities/cmi.interaction',
                 'name' => [
@@ -65,12 +126,16 @@ function randomsamatch(array $config, \stdClass $event, \stdClass $questionattem
                     $lang => utils\get_string_html_removed($question->questiontext)
                 ],
                 'interactionType' => 'matching',
+                'correctResponsesPattern' => [$cResponsePattern],
+                'source' => $source,
+                'target' => $target,
             ]
         ],
         'timestamp' => utils\get_event_timestamp($event),
         'result' => [
             'response' => isset($questionattempt->responsesummary) ? $formattedResult : "",
-            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false,           
+            'success' => (strcasecmp($questionattempt->rightanswer, $questionattempt->responsesummary) == 0),
+            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false,
         ],
         'context' => [
             'platform' => $config['source_name'],
@@ -92,9 +157,9 @@ function randomsamatch(array $config, \stdClass $event, \stdClass $questionattem
         ]
     ]];
 
-    if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-        $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    }
+    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+    // }
 
     return $stmnt;
 }

@@ -29,10 +29,6 @@ function numerical(array $config, \stdClass $event, \stdClass $questionattempt, 
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
     $lang = utils\get_course_lang($course);
 
-    
-    // $json_pretty_string = json_encode('numerical'.$questionattempt->rightanswer, JSON_PRETTY_PRINT);
-    // error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
-
     $stmnt = [[
         'actor' => utils\get_user($config, $user),
         'verb' => [
@@ -58,7 +54,9 @@ function numerical(array $config, \stdClass $event, \stdClass $questionattempt, 
         'timestamp' => utils\get_event_timestamp($event),
         'result' => [
             'response' => isset($questionattempt->responsesummary) ? $questionattempt->responsesummary : "",
+            'success' => $questionattempt->rightanswer == $questionattempt->responsesummary,
             'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false,
+
         ],
         'context' => [
             'platform' => $config['source_name'],
@@ -80,9 +78,9 @@ function numerical(array $config, \stdClass $event, \stdClass $questionattempt, 
         ]
     ]];
 
-    if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-        $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    }
+    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+    // }
 
     return $stmnt;
 }

@@ -24,7 +24,7 @@ function handler(array $config, \stdClass $event, \stdClass $feedbackvalue) {
     $repo = $config['repo'];
     $feedbackitem = $repo->read_record_by_id('feedback_item', $feedbackvalue->item);
 
-    // $json_pretty_string = json_encode('type: '.$feedbackitem->typ, JSON_PRETTY_PRINT);
+    // $json_pretty_string = json_encode($feedbackitem, JSON_PRETTY_PRINT);
     // error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
 
     switch ($feedbackitem->typ) {
