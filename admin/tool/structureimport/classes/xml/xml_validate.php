@@ -151,6 +151,9 @@ class xml_validate {
 		$firstpass = true;
 		
 		// Dig through full structure and verify required child nodes
+		$dot_counter = 0;
+		$dot_counter2 = 0;
+
 		while (sizeof($object_stack) > 0 || $firstpass === true) {
 			$firstpass = false;
 			
@@ -158,6 +161,24 @@ class xml_validate {
 				foreach ($val[1] as $key2 => $val2) {
 					$this->node_inspect($key2, $val2, $val[0]);
 					array_push($object_stack, array($key2, $val2));
+										
+					$dot_counter++;
+					
+					if ($dot_counter == 200) {
+						echo '.';
+						flush();
+						
+						$dot_counter = 0;
+						
+						$dot_counter2++;
+						
+						if ($dot_counter2 == 200) {
+							echo '<br>';
+							flush();
+							
+							$dot_counter2 = 0;
+						}
+					}
 				}
 				
 				$parent_node = $key;
@@ -166,7 +187,7 @@ class xml_validate {
 			unset($key, $val);
 		}
 		
-		unset($firstpass, $object_stack, $parent_node);
+		unset($firstpass, $object_stack, $parent_node, $dot_counter, $dot_counter2);
 	}
 	
 }

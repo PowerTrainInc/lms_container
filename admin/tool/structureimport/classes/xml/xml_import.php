@@ -167,46 +167,72 @@ class xml_import {
 	 * @param	string $hash Category hash value
 	 */
 	private function create_category(array $node_values, $hash) : void {
+		global $DB;
+		
 		if ($this->parent_stack[$hash] == null) {
 			$parent_id = $this->parent_id;
 		} else {
 			$parent_id = $this->parent_stack_id[$this->parent_stack[$hash]];
 		}
 
-		$context = \context_coursecat::instance($parent_id);
+		$category_id = null;
+		$category_update = false;
 		
-		$data = new \stdClass();
-		
-		$data->parent = (string)$parent_id;
-		$data->name = $node_values['name'];
-		$data->idnumber = (isset($node_values['idnumber'])? $node_values['idnumber'] : '');
-		$data->description_editor = array('text' => (isset($node_values['description']) ? $node_values['description'] : ''), 
-			'format' => '1', 'itemid' => null);
-		$data->id = 0;
-		
-		$form = array(
-			'maxfiles' => -1,
-			'maxbytes' => '0',
-			'trusttext' => false,
-			'noclean' => true,
-			'context' => $context,
-			'subdirs' => false
-		);
-
-		try {
-			if ($category = \core_course_category::create($data, $form)) {
-				// success
-			} else {
-				throw new \Exception(get_string('criterrorcategoryfail', 'tool_structureimport'));
+		// idnumber must exist in $node_values to match a category for updating
+		if (isset($node_values['idnumber'])) {
+			if ($category_exists = $DB->get_record('course_categories', array('parent' => $parent_id, 'idnumber' => $node_values['idnumber']))) {
+				$category_id = $category_exists->id;
+				$category_update = true;
 			}
-		} catch(Exception $e) {
-			$this->transaction->rollback($e);
+			
+			unset($parent_exists);
 		}
 
-		echo get_string('successcategory', 'tool_structureimport', array('id' => $category->id, 'name' => $data->name)) . '<br>';
+		if ($category_update === false) {
+			$context = \context_coursecat::instance($parent_id);
+			
+			$data = new \stdClass();
+			
+			$data->parent = (string)$parent_id;
+			$data->name = $node_values['name'];
+			$data->idnumber = (isset($node_values['idnumber'])? $node_values['idnumber'] : '');
+			$data->description_editor = array('text' => (isset($node_values['description']) ? $node_values['description'] : ''), 
+				'format' => '1', 'itemid' => null);
+			$data->id = 0;
+			
+			$form = array(
+				'maxfiles' => -1,
+				'maxbytes' => '0',
+				'trusttext' => false,
+				'noclean' => true,
+				'context' => $context,
+				'subdirs' => false
+			);
+
+			try {
+				if ($category = \core_course_category::create($data, $form)) {
+					// success
+				} else {
+					throw new \Exception(get_string('criterrorcategoryfail', 'tool_structureimport'));
+				}
+			} catch(Exception $e) {
+				$this->transaction->rollback($e);
+			}
+		} else {
+			$category = new \stdClass;
+			$category->id = $category_id;
+			
+			$data = new \stdClass();
+			$data->name = $node_values['name'];
+		}
+
+		echo get_string(($category_update ? 'successcategory:update' : 'successcategory'), 'tool_structureimport', 
+				array('id' => $category->id, 'name' => $data->name)) . '<br>';
 		flush();
 		
 		$this->parent_stack_id[$hash] = $category->id;
+		
+		unset($category_id, $category_update);
 		
 		array_push($this->completed_node_stack, $hash);
 	}
@@ -263,6 +289,19 @@ class xml_import {
 		$data->role_7 = (isset($node_values['role_7']) ? (string)$node_values['role_7'] : '');
 		$data->role_8 = (isset($node_values['role_8']) ? (string)$node_values['role_8'] : '');
 		$data->tags = array();
+		
+		// Check for custom fields
+		reset($node_values);
+		
+		foreach($node_values as $key => $val) {
+			if (substr($key, 0, 12) == 'customfield_') {
+				$data->$key = $val;
+			}
+		}
+		
+		unset($key, $val);
+		// End custom field check
+
 		$data->id = 0;
 		
 		try {
@@ -428,7 +467,7 @@ class xml_import {
 					case 'course':
 						if (!$this->node_complete($node_array[1])) {
 							$parent_node = $this->parent_stack[$node_array[1]];
-							$parent_type = $this->parent_stack_type[$parent_node];
+							$parent_type = (isset($this->parent_stack_type[$parent_node]) ? $this->parent_stack_type[$parent_node] : null);
 
 							if (substr($parent_type, -8) != 'activity') {
 								$this->create_course($node_values, $node_array[1]);

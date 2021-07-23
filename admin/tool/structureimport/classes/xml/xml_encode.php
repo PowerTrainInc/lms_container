@@ -152,6 +152,10 @@ class xml_encode {
 		$xml_array = explode("\n", $xml); // must use double quotes in explode
 		$activity_string = $this->get_activities();
 
+		$dot_counter = 0;
+		$dot_counter2 = 0;
+		echo '<br>';
+
 		foreach ($xml_array as $key => $val) {
 			// Encode opening tags
 			$xml_array[$key] = preg_replace_callback(
@@ -168,13 +172,34 @@ class xml_encode {
 					return $this->encode_close_item($matches);
 				},
 				$xml_array[$key], 1);
+				
+			$dot_counter++;
+				
+			if ($dot_counter == 500) {
+				echo '+';
+				flush();
+						
+				$dot_counter = 0;
+						
+				$dot_counter2++;
+						
+				if ($dot_counter2 == 70) {
+					echo '<br>';
+					flush();
+							
+					$dot_counter2 = 0;
+				}
+			}
+
 		}
 		
 		$xml_temp = implode("\n", $xml_array); // must use double quotes in implode
 		
 		$xml = $xml_temp;
 		
-		unset($xml_temp, $xml_array, $key, $val, $activity_string);
+		unset($xml_temp, $xml_array, $key, $val, $activity_string, $dot_counter, $dot_counter2);
+		
+		echo '<br>';
 		
 		file_put_contents($this->xml_filename, $xml);
 	}
