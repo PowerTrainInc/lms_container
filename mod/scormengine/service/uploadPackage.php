@@ -11,10 +11,10 @@ if(!$allowed) return;
 //console_log( "$tmp_file" );
 //console_log( "fileType" );
 //console_log( "$fileType" );
-$title = $_POST["title"];
+
 // Allow certain file formats
 
-$tmp_file = basename($_FILES["package"]["tmp_name"]);
+$tmp_file = $_FILES["package"]["tmp_name"];
 $upload_filename = basename($_FILES["package"]["name"]);
 $uploadOk = 1;
 $fileType = strtolower(pathinfo($upload_filename,PATHINFO_EXTENSION));
@@ -34,7 +34,8 @@ if ($uploadOk == 0) {
 } else {
   
         $cid = uuid();
-        $fullpath = sys_get_temp_dir()."/".$tmp_file;
+        $fullpath = $tmp_file;
+        $title = "";
       
         //console_log("Save File");
         //console_log($fullpath);
@@ -42,23 +43,32 @@ if ($uploadOk == 0) {
         $upload = se_postFile('/courses/upload?courseId='.$cid.'&dryRun=true',$title,$fullpath);
         //console_log($upload);
         
+        
         if($upload)
         {
+          if( $upload->message == "Authentication Failed" )
+          {
+            http_response_code(400);
+            header('Content-Type: application/json');
+            echo json_encode(["error"=>"Scorm Engine Authentication Failed"],JSON_PRETTY_PRINT);
+            return;
+          }
           if( count($upload->parserWarnings) > 0 )
           {
 
             http_response_code(400);
             header('Content-Type: application/json');
-            echo json_encode([error=>"Package Error", data=>$upload],JSON_PRETTY_PRINT);
+            echo json_encode(["error"=>"Package Error", data=>$upload],JSON_PRETTY_PRINT);
             return;
           }
-
+  
+          $title = isset($_POST["title"]) ? $_POST["title"] : null;
           $upload = se_postFile('/courses/upload?courseId='.$cid.'&dryRun=false',$title,$fullpath);
-
+          $description = isset($_POST["description"]) ? $_POST["description"] : null;
             $newReg = [
                 'owner'=>$USER->id,
-                'title'=>$_POST["title"] ?? ( $upload->course->metadata->title ?? ''),
-                'description'=>$_POST["description"] ?? ( $upload->course->metadata->description ?? ''),
+                'title'=>$title ?? ( $upload->course->metadata->title ?? $upload->course->title),
+                'description'=>$description ?? ( $upload->course->metadata->description ?? ''),
                 'filename'=>$upload_filename,
                 'uuid'=>$cid,
             ];
@@ -72,7 +82,7 @@ if ($uploadOk == 0) {
             http_response_code(500);
             header('Content-Type: application/json');
            // header('Location: ' . $_SERVER['HTTP_REFERER']);
-            echo json_encode(["err"=>"Could not connect to Scorm Engine"],JSON_PRETTY_PRINT);
+            echo json_encode(["error"=>"Could not connect to Scorm Engine"],JSON_PRETTY_PRINT);
         }
     
 }

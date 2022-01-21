@@ -39,6 +39,11 @@ class structureimport {
 				throw new \coding_exception(get_string('criterrormissingfile', 'tool_structureimport'));
 			}
 			
+			if (!is_writable($CFG->dataroot . '/temp/filestorage/')) {
+				throw new \Exception(get_string('criterrorstoragefail', 'tool_structureimport', 
+						array('path' => $CFG->dataroot . '/temp/filestorage/')));	
+			}
+
 			$xml_file = $CFG->dataroot . '/temp/filestorage/' . $fromform->structure_file . '.xml';
 			$mform->save_file('structure_file', $xml_file, true);
 			

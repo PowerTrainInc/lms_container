@@ -1,6 +1,6 @@
 <?php
 /**
- * This file contains the customcert plugin functionality.
+ * This file contains the customcertpwt plugin functionality.
  *
  * @package    tool_structureimport
  * @copyright  2021 PowerTrain Inc {@link https://powertrain.com/}
@@ -58,7 +58,7 @@ class customcert {
 	}
 
 	/**
-	 * Function creates the customcert activity
+	 * Function creates the customcertpwt activity
 	 * @param	array $node_values Array of values that make up activity settings
 	 * @param	string $hash Node hash value
 	 * @param	array $parent_stack Reference to $parent_stack
@@ -69,7 +69,7 @@ class customcert {
 	 */
 	public function create_customcertactivity(array $node_values, $hash, &$parent_stack, &$parent_stack_id, 
 			&$parent_id, &$parent_stack_type, &$completed_node_stack) : void {
-		global $CFG, $DB;
+		global $CFG, $DB, $USER;
 
 		$activity_course_id = 0;
 
@@ -100,7 +100,7 @@ class customcert {
 			$parent_id = $parent_stack_id[$parent_stack[$hash]];
 		}
 
-		$module = $DB->get_record('modules', array('name' => 'customcert'), 'id');
+		$module = $DB->get_record('modules', array('name' => 'customcertpwt'), 'id');
 
 		if (!$module) {
 			throw new \Exception(get_string('criterrormissingmodule', 'tool_structureimport'));
@@ -138,9 +138,9 @@ class customcert {
 		$fromform->coursemodule = (int)(isset($node_values['coursemodule']) ? $node_values['coursemodule'] : 0);
 		$fromform->section = $activity_section;
 		$fromform->module = $module->id;
-		$fromform->modulename = 'customcert';
+		$fromform->modulename = 'customcertpwt';
 		$fromform->instance = (int)(isset($module_values['instance']) ? $module_values['instance'] : 0);
-		$fromform->add = 'customcert';
+		$fromform->add = 'customcertpwt';
 		$fromform->update = 0;
 		$fromform->return = 0;
 		$fromform->sr = 0;
@@ -167,23 +167,25 @@ class customcert {
 		}
 
 		// Check if template is set and available
-		// This requires a minor customization to the customcert_delete_instance function in /mod/customcert/lib.php
-		// Need to delete the template by contextid instead of id
-		// Also change get_record to get_records in /mod/customcert/classes/template.php around line 272-273
-		// Minor customizations in /mod/customcert/classes/element_helper.php between 377-394
 		if (isset($node_values['template']) && $node_values['template'] != '') {
-			$cert_template = $DB->get_records('customcert_templates', array('name' => $node_values['template']), '', 'id', 0, 1);
+			$cert_template = $DB->get_records('customcertpwt_templates', array('name' => $node_values['template']), '', 'id', 0, 1);
 			$template_id = array_key_first($cert_template);
-			
-			if ($cert_template) {
+
+			if (sizeof($cert_template) > 0) {
 				$update = new \stdClass;
 				
 				$update->id = $fromform->instance;
 				$update->templateid = $template_id;
+				
+				// Log update of certificate template
+				(new \tool_structureimport\core_functionality\logging)->create($fromform->instance, $USER->id, 
+						null, 'certificate_template_updated');
 
-				$DB->update_record('customcert', $update);
+				$DB->update_record('customcertpwt', $update);
 
 				unset($update);
+			} else {
+				throw new \Exception(get_string('criterrorinvalidtemplate', 'tool_structureimport', array('template' => $node_values['template'])));
 			}
 			
 			unset($cert_template, $template_id);

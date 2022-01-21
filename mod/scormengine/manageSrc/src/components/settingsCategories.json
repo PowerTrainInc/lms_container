@@ -1,0 +1,80 @@
+[
+    {
+        "category": "Navigational Controls",
+        "settings": [
+            "PlayerShowNavBar",
+            "PlayerShowFinishButton",
+            "PlayerShowProgressBar",
+            "PlayerUseMeasureProgressBar",
+            "PlayerShowTitleBar",
+            "PlayerPreventRightClick",
+            "PlayerShowCourseStructure",
+            "PlayerCourseStructureStartsOpen",
+            "PlayerCourseStructureWidth",
+            "PlayerStatusDisplayPreference",
+            "PlayerInvalidMenuItemAction"
+        ]
+    },
+    {
+        "category": "Launch Behavior",
+        "settings": [
+            "PlayerScoLaunchType",
+            "PlayerLaunchType",
+            "PlayerDesiredFullScreen",
+            "PlayerDesiredWidth",
+            "PlayerDesiredHeight",
+            "PlayerRequiredWidth",
+            "PlayerRequiredHeight",
+            "PlayerPreventWindowResize",
+            "PlayerTimeLimit"
+        ]
+    },
+    {
+        "category": "Compatibility Settings",
+        "settings": [
+            "PlayerFinishCausesImmediateCommit",
+            "PlayerLogoutCausesPlayerExit",
+            "PlayerWrapScoWindowWithApi",
+            "PlayerAlwaysFlowToFirstSco",
+            "PlayerValidateInteractionResponses",
+            "PlayerScaleRawScore",
+            "PlayerRollupEmptySetToUnknown",
+            "PlayerLookaheadSequencerMode",
+            "PlayerUseQuickLookaheadSequencer",
+            "PlayerResetRunTimeData",
+            "PlayerReturnToLmsAction",
+            "PlayerSuspendDataMaxLength",
+            "PlayerInternetExplorerCompatibilityMode",
+            "PlayerForceDisableRootChoice",
+            "PlayerRollupRuntimeAtScoUnload",
+            "PlayerForceObjectiveCompletionSetByContent",
+            "PlayerInvokeRollupAtSuspendAll",
+            "PlayerSatisfiedCausesCompletion",
+            "PlayerMakeStudentPrefsGlobalToCourse"
+        ]
+    },
+    {
+        "category": "Communication Settings",
+        "settings": [
+            "PlayerCommMaxFailedSubmissions",
+            "PlayerCommCommitFrequency"
+        ]
+    },
+    {
+        "category": "Debugger Options",
+        "settings": [
+            "PlayerDebugControlDetailed",
+            "PlayerDebugRteDetailed",
+            "PlayerDebugSequencingAudit",
+            "PlayerDebugLookAheadDetailed",
+            "PlayerDebugIncludeTimestamps"
+        ]
+    },
+    {
+        "category": "History Options",
+        "settings": [
+            "PlayerCaptureHistory",
+            "PlayerCaptureHistoryDetailed"
+        ]
+    }
+]

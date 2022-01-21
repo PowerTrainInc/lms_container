@@ -20,6 +20,12 @@ class StatementBuilder {
             'type' => 'http://adlnet.gov/expapi/activities/profile'
         ]
     ];
+    const assessment_context_category = [
+        'id' => 'https://w3id.org/xapi/netc-assessment/v1.0',
+        'definition' => [
+            'type' => 'http://adlnet.gov/expapi/activities/profile'
+        ]
+    ];
     const scorm_platform = 'SCORM Engine 20.1';
     const activity_id_prefix = 'https://navy.mil/netc/xapi/activities';
 
@@ -81,6 +87,8 @@ class StatementBuilder {
             'platform' => self::scorm_platform,
             'extensions' => [
                 'https://w3id.org/xapi/netc/extensions/launch-location' => 'Ashore',
+                'https://w3id.org/xapi/netc/extensions/school-center' => "Center for Naval Aviation Technical Training (CNATT)",
+                'https://w3id.org/xapi/netc/extensions/user-agent' => $_SERVER['HTTP_USER_AGENT'],
             ]
         ];
     }
@@ -262,6 +270,96 @@ class StatementBuilder {
             'object' => $this->build_lesson_object($this->build_lesson_activity_id($lesson->id), $lesson->title),
             'context' => $this->build_lesson_context($registration_id, $seo->course),
         ];
+    }
+
+    function build_interaction_activity_id($interaction_id) {
+        return self::activity_id_prefix."/cmi.interactions/{$interaction_id}";
+    }
+
+    function build_assessment_activity_id($assessment_id) {
+        return self::activity_id_prefix."/assessments/{$assessment_id}";
+    }
+
+    function get_interaction_type($interaction_type) {
+        if (preg_match('/choice/i', $interaction_type)) return 'choice';
+        elseif (preg_match('/true|false/i', $interaction_type)) return 'true-false';
+        elseif (preg_match('/long|fill|in/i', $interaction_type)) return 'long-fill-in';
+        elseif (preg_match('/fill|in/i', $interaction_type)) return 'fill-in';
+        elseif (preg_match('/matching/i', $interaction_type)) return 'matching';
+        elseif (preg_match('/performance/i', $interaction_type)) return 'performance';
+        elseif (preg_match('/sequencing/i', $interaction_type)) return 'sequencing';
+        elseif (preg_match('/like|rt/i', $interaction_type)) return 'likert';
+        elseif (preg_match('/numeric/i', $interaction_type)) return 'numeric';
+        else return 'other';
+    }
+
+    function build_interaction_object($interaction_activity_id, $interaction_description, $interaction_type) {
+        return [
+            'id' => $interaction_activity_id,
+            'definition' => [
+                'description' => [
+                    'en' => $interaction_description,
+                ],
+                'type' => 'http://adlnet.gov/expapi/activities/cmi.interaction',
+                'interactionType' => $this->get_interaction_type($interaction_type),
+            ],
+        ];
+    }
+
+    function build_assessment_object($assessment_activity_id) {
+        return [
+            'id' => $assessment_activity_id,
+            'definition' => [
+                'type' => 'http://adlnet.gov/expapi/activities/assessment'
+            ],
+        ];
+    }
+
+    function build_interaction_context($assessment_id, $lesson_registration_id, $lesson, $course) {
+        return [
+            'contextActivities' => [
+                'parent' => [
+                    $this->build_assessment_object($this->build_assessment_activity_id($assessment_id)),
+                ],
+                'grouping' => [
+                    $this->build_course_object($course),
+                    $this->build_lesson_object($this->build_lesson_activity_id($lesson->id), $lesson->title)
+                ],
+                'category' => [
+                    self::scorm_context_category,
+                    self::netc_context_category,
+                    self::elearning_context_category,
+                    self::assessment_context_category,
+                ]
+            ],
+            'registration' => $lesson_registration_id,
+            'platform' => self::scorm_platform,
+            'extensions' => [
+                'https://w3id.org/xapi/netc/extensions/launch-location' => 'Ashore',
+                'https://w3id.org/xapi/netc/extensions/school-center' => "Center for Naval Aviation Technical Training (CNATT)",
+                'https://w3id.org/xapi/netc/extensions/user-agent' => $_SERVER['HTTP_USER_AGENT'],
+            ]
+        ];
+    }
+
+    public function build_interaction_responded_statement($interaction, $lesson, $lesson_registration_id, $learner, $course, $assessment_id) {
+        $statement = [
+            'actor' =>  $this->build_course_actor($learner),
+            'verb' =>  $this->build_course_verb('http://adlnet.gov/expapi/verbs/responded', 'responded'),
+            'object' => $this->build_interaction_object(
+                $this->build_interaction_activity_id($interaction->id), $interaction->description, $interaction->type),
+            'context' => $this->build_interaction_context(
+                $assessment_id, $lesson_registration_id, $lesson, $course),
+        ];
+
+        if ($interaction->learnerResponse !== '') {
+            $statement['result']['response'] = $interaction->learnerResponse;
+            if ($interaction->result) {
+                $statement['result']['success'] = $interaction->result === 'correct' ? true : false;
+            }
+        }
+
+        return $statement;
     }
 }
 

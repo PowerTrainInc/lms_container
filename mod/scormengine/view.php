@@ -78,7 +78,7 @@ if( $existingReg == false)
         'registration' => array (
             'courseId'=> $moduleinstance->package_id,
             'learner'=> array (
-                'id'=> $USER->id,
+                'id'=> empty($USER->idnumber) ? $USER->username : $USER->idnumber,
                 'firstName'=> $USER->firstname,
                 'lastName'=> $USER->lastname,
             ),

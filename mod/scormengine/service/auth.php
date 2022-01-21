@@ -35,7 +35,7 @@ $headers = getRequestHeaders();
 
 $bulkKey = get_config('scormengine', 'bulk_api_key');
 
-if($headers["Api-Key"] == $bulkKey && !is_null($bulkKey)) $allowed = true;
+if(isset($headers["Api-Key"]) == $bulkKey && !is_null($bulkKey)) $allowed = true;
 
 if(!$allowed)
 {

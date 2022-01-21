@@ -10,7 +10,6 @@ function send_xapi_statements_from_seo($type, $seo, $url, $user, $password) {
     $lrs_api = new xapi\LrsApi($requests, $url, $user, $password);
 
     $statements = get_xapi_statements_from_seo($type, $seo, $lrs_api);
-    error_log(json_encode($statements));
     if ($statements && count($statements) > 0) {
         $lrs_api->statements()->create_resource($statements)->with_no_params();
     }
@@ -107,12 +106,14 @@ function get_xapi_statements_from_seo($type, $seo, $lrs_api) {
 
 function terminate_all_lessons($lessons, $seo, $lrs_api) {
     $statement_builder = new xapi\StatementBuilder();
+
     $state_params = [
         'agent' => [
             'account' => $statement_builder->build_course_actor($seo->learner)['account'],
         ],
         'stateId' => 'https://w3id.org/xapi/scorm/attempt-state',
     ];
+
     $statements = [];
 
     foreach($lessons as $activity_id => $registration_ids) {
@@ -161,6 +162,32 @@ function process_lessons($lessons, $course_state, $lrs_api, $seo) {
     return $current_state;
 }
 
+function get_interaction_attempt_states($lesson, $lesson_registration_id, $attempt_state, $seo) {
+    if (!isset($lesson->runtime->runtimeInteractions) || count($lesson->runtime->runtimeInteractions) === 0) {
+        return [];
+    }
+
+    $sb = new xapi\StatementBuilder();
+    
+    $assessment_id = uuid();
+    $assessment = isset($attempt_state['assessment']) ? $attempt_state['assessment'] : [
+        'id' => $sb->build_assessment_activity_id($assessment_id),
+        'interactions' => [],
+    ];
+    $statements = [];
+
+    foreach ($lesson->runtime->runtimeInteractions as $interaction) {
+        $interaction_id = $sb->build_interaction_activity_id($interaction->id);
+        if (!in_array($interaction_id, $assessment['interactions'])) {
+            $assessment['interactions'][] = $interaction_id;
+            $statements[] = $sb->build_interaction_responded_statement(
+                $interaction, $lesson, $lesson_registration_id, $seo->learner, $seo->course, $assessment_id);
+        }
+    }
+
+    return [ 'assessment' => $assessment, 'statements' => $statements ];
+}
+
 function process_lesson($lesson, $course_state, $lrs_api, $seo) {
     $current_state = $course_state;
     $statement_builder = new xapi\StatementBuilder();
@@ -192,7 +219,7 @@ function process_lesson($lesson, $course_state, $lrs_api, $seo) {
 
     // Set the attempt details for this session
     $current_attempt_state = [ 'title' => $lesson->title ];
-    if (isset($lesson->location)) $current_attempt_state['location'] = $lesson->location;
+    if (isset($lesson->runtime->location)) $current_attempt_state['location'] = $lesson->runtime->location;
     if (isset($lesson->timeTracked)) {
         $current_attempt_state['total_time'] = 
             $statement_builder->get_iso8601_duration($statement_builder->get_duration_seconds($lesson->timeTracked));
@@ -222,6 +249,11 @@ function process_lesson($lesson, $course_state, $lrs_api, $seo) {
 
             // If the new 'total_time' is not equal to the last 'total_time', then it can be assumed something happened in this lesson.
             if ($attempt_state['total_time'] !== $current_attempt_state['total_time']) {
+                // Check for assessment interactions in this lesson
+                $interaction_state = get_interaction_attempt_states($lesson, $registration_id, $attempt_state, $seo);
+                $current_state['statements'] = array_merge($current_state['statements'], $interaction_state['statements']);
+                $current_attempt_state['assessment'] = $interaction_state['assessment'];
+
                 // create the any new statements and attempt states for this lesson attempt.
                 // [ 'statements' => [<statements>], 'lesson_states' => [ 'intialized' => true, ... ] ];
                 $lesson_state = get_lesson_attempt_states(
@@ -273,7 +305,6 @@ function process_lesson($lesson, $course_state, $lrs_api, $seo) {
             $current_state['statements'] = array_merge($current_state['statements'], $missing_attempts['statements']);
             $current_state['lessons'][$lesson_activity_id] =
                 array_merge($current_state['lessons'][$lesson_activity_id], $missing_attempts['attempts']);
-            $activity_state['attempts'] = array_merge($activity_state['attempts'], $missing_attempts['attempts']);
         }
 
         // add the lesson initialize statement
@@ -284,6 +315,11 @@ function process_lesson($lesson, $course_state, $lrs_api, $seo) {
 
         // add to course lesson id attempts
         $current_state['lessons'][$lesson_activity_id][] = $registration_id;
+
+        // Check for assessment interactions in this lesson
+        $interaction_state = get_interaction_attempt_states($lesson, $registration_id, [], $seo);
+        $current_state['statements'] = array_merge($current_state['statements'], $interaction_state['statements']);
+        $current_attempt_state['assessment'] = $interaction_state['assessment'];
 
         // get any lesson states and statements
         $lesson_state = get_lesson_attempt_states($lesson, $registration_id, [ 'initialized' => true ], $seo, $lrs_api);
@@ -330,7 +366,7 @@ function create_missing_attempts($lesson, $missing_attempt_count, $state_params,
             'lesson_states' => [ 'initialized' => true, 'terminated' => true ]
         ];
         $lrs_api->activity_states()
-            ->create_resource($missign_lesson_attempt_state)
+            ->create_resource($missing_lesson_attempt_state)
             ->with_query_params($state_params);
 
         // add initialize statement.

@@ -1,6 +1,6 @@
 import React, { Component, useState, useEffect } from "react";
 import Pages from "./pages";
-
+import Settings from "./Settings";
 function DeleteConfirm({promptText,okFunc,cancelFunc})
 {
 
@@ -177,8 +177,6 @@ function List({ API, selected, setSelected }) {
         <thead className="thead-dark">
           <tr>
             <th scope="col">#</th>
-            <th scope="col">Title</th>
-            <th scope="col">Description</th>
             <th scope="col">FileName</th>
             <th scope="col">UUID</th>
             <th scope="col"></th>
@@ -188,8 +186,6 @@ function List({ API, selected, setSelected }) {
           {packages.map(i => (
             <tr className={i.uuid === selected ? "table-primary" : ""}>
               <th scope="row">{i.id}</th>
-              <td>{i.title}</td>
-              <td>{i.description}</td>
               <td>{i.filename}</td>
               <td>{i.uuid}</td>
               <td>
@@ -256,7 +252,7 @@ function ShowSelected({selected,API})
   {
     return <div className="alert alert-primary" style={{margin:"1em"}}>
       <h3><b>Current Selection:</b> {selectedPackage.title}</h3>
-      <p>{selectedPackage.description}</p>
+      {/* <p>{selectedPackage.description}</p> */}
       <p>{selectedPackage.filename}</p>
     </div>
   }
@@ -356,7 +352,10 @@ function Main() {
                   xhr.responseJSON.data.parserWarnings.join(", ")
               );
             else {
-              addError("An unknown error occurred");
+              if( xhr.responseJSON.error)
+                addError("Error: " +  xhr.responseJSON.error);
+              else
+                addError("An unknown error ocurred");
             }
           }
           if(error)
@@ -418,6 +417,19 @@ let _mode = mode.replace("#","")
                 Attempts
               </a>
             </li>
+           
+          )}
+           {selected && (
+            <li className="nav-item">
+              <a
+                className={"nav-link " + (_mode === "settings" ? "active" : "")}
+                onClick={() => setMode("settings")}
+                href="#"
+              >
+                Settings
+              </a>
+            </li>
+           
           )}
         </ul>
       )}
@@ -434,6 +446,9 @@ let _mode = mode.replace("#","")
       )}
       {errors.length ==0 && _mode == "attempts" && (
         <Attempts API={API} selected={selected}></Attempts>
+      )}
+      {errors.length ==0 && _mode == "settings" && (
+        <Settings API={API} selected={selected}></Settings>
       )}
       </div>
     </div>

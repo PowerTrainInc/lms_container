@@ -124,8 +124,7 @@ class mod_scormengine_mod_form extends moodleform_mod {
         $mform = $this;
     //    $name = $mform->get_new_filename('packageFile');
         console_log("mod form");
-      
-        console_log($name);
+
    /*     if($name)
         {
             $cid = uuid();

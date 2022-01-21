@@ -189,7 +189,12 @@ class xml_import {
 		}
 
 		if ($category_update === false) {
-			$context = \context_coursecat::instance($parent_id);
+			// Check if Top is our target
+			if ($parent_id == 0) {
+				$context = \context_system::instance();
+			} else {
+				$context = \context_coursecat::instance($parent_id);
+			}
 			
 			$data = new \stdClass();
 			
@@ -251,6 +256,11 @@ class xml_import {
 			$parent_id = $this->parent_stack_id[$this->parent_stack[$hash]];
 		}
 
+		// Check if course is being created/updated in a category
+		if ($parent_id == 0) {
+			throw new \Exception(get_string('criterrorcoursefailcat', 'tool_structureimport'));
+		}
+
 		$context = \context_coursecat::instance($parent_id);
 
 		$data = new \stdClass();
@@ -258,7 +268,7 @@ class xml_import {
 		$data->shortname = $node_values['shortname'];
 		$data->category = (string)$parent_id;
 		$data->visible = (isset($node_values['visible']) ? (string)$node_values['visible'] : '1');
-		$data->startdate = (int)$node_values['startdate'];
+		$data->startdate = (isset($node_values['startdate']) ? (int)$node_values['startdate'] : time());
 		$data->enddate = (int)(isset($node_values['enddate']) ? $node_values['enddate'] : 0);
 		$data->idnumber = (isset($node_values['courseid']) ? $node_values['courseid'] : ''); // optional
 		$data->mform_isexpanded_id_descriptionhdr = 1;
@@ -431,7 +441,7 @@ class xml_import {
 			array_push($parent_stack, $parent_node);
 			array_push($object_stack, array($key, $val));
 		}
-		
+
 		unset($key, $val, $node_array, $firstpass);
 
 		$firstpass = true;
@@ -441,6 +451,8 @@ class xml_import {
 			$firstpass = false;
 
 			foreach ($object_stack as $key => $val) {
+				$key = trim($key);
+				
 				// check for node with hash
 				if (strpos($val[0], ':')) {
 					$node_array = explode(':', $val[0]);
