@@ -44,6 +44,15 @@ jobs:
       - name: List
         run: ls ./vendor/bin/ -al
         
+      - name: Install psalm
+        run: composer require --dev vimeo/psalm
+        
+      - name: Generate config
+        run: ./vendor/bin/psalm --init
+        
+      - name: Run psalm
+        run: ./vendor/bin/psalm --output-format=github
+        
       - name: Psalm
         uses: docker://vimeo/psalm-github-actions
         with:
