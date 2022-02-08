@@ -44,9 +44,6 @@ jobs:
       - name: List
         run: ls ./vendor/bin/ -al
         
-      - name: Run psalm
-        run: ./vendor/bin/psalm --output-format=github
-        
       - name: Psalm
         uses: docker://vimeo/psalm-github-actions
         with:
