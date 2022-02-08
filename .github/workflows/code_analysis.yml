@@ -42,7 +42,7 @@ jobs:
         run: composer install -n --prefer-dist
 
       - name: List
-        run: ls -al
+        run: ls ./vendor/bin/ -al
         
       - name: Run psalm
         run: ./vendor/bin/psalm --output-format=github
