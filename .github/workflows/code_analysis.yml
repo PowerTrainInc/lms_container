@@ -24,8 +24,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-            repository: 'PowerTrainInc/lms_container'
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -43,6 +41,9 @@ jobs:
       - name: Run composer install
         run: composer install -n --prefer-dist
 
+      - name: List
+        run: ls -al
+        
       - name: Run psalm
         run: ./vendor/bin/psalm --output-format=github
         
