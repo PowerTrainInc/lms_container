@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Authorization Code login flow.
+ *
  * @package auth_oidc
  * @author James McQuillan <james.mcquillan@remote-learner.net>
  * @author Lai Wei <lai.wei@enovation.ie>
@@ -54,7 +56,7 @@ class authcode extends base {
             $icon = (!empty($this->config->icon)) ? $this->config->icon : 'auth_oidc:o365';
             $icon = explode(':', $icon);
             if (isset($icon[1])) {
-                list($iconcomponent, $iconkey) = $icon;
+                [$iconcomponent, $iconkey] = $icon;
             } else {
                 $iconcomponent = 'auth_oidc';
                 $iconkey = 'o365';
@@ -175,11 +177,11 @@ class authcode extends base {
      * @param array $authparams Received parameters.
      */
     protected function handleauthresponse(array $authparams) {
-        global $DB, $STATEADDITIONALDATA, $USER;
+        global $DB, $SESSION, $USER, $CFG;
 
         if (!empty($authparams['error_description'])) {
             utils::debug('Authorization error.', 'authcode::handleauthresponse', $authparams);
-            throw new \moodle_exception('errorauthgeneral', 'auth_oidc');
+            redirect($CFG->wwwroot, get_string('errorauthgeneral', 'auth_oidc'), null, \core\output\notification::NOTIFY_ERROR);
         }
 
         if (!isset($authparams['code'])) {
@@ -205,7 +207,7 @@ class authcode extends base {
                 $additionaldata = [];
             }
         }
-        $STATEADDITIONALDATA = $additionaldata;
+        $SESSION->stateadditionaldata = $additionaldata;
         $DB->delete_records('auth_oidc_state', ['id' => $staterec->id]);
 
         // Get token from auth code.
@@ -216,7 +218,7 @@ class authcode extends base {
         }
 
         // Decode and verify idtoken.
-        list($oidcuniqid, $idtoken) = $this->process_idtoken($tokenparams['id_token'], $orignonce);
+        [$oidcuniqid, $idtoken] = $this->process_idtoken($tokenparams['id_token'], $orignonce);
 
         // Check restrictions.
         $passed = $this->checkrestrictions($idtoken);
@@ -373,6 +375,7 @@ class authcode extends base {
     /**
      * Determines whether the given Azure AD UPN is already matched to a Moodle user (and has not been completed).
      *
+     * @param $aadupn
      * @return false|stdClass Either the matched Moodle user record, or false if not matched.
      */
     protected function check_for_matched($aadupn) {
@@ -423,6 +426,12 @@ class authcode extends base {
         global $DB, $CFG;
 
         $tokenrec = $DB->get_record('auth_oidc_token', ['oidcuniqid' => $oidcuniqid]);
+
+        // Do not continue if auth plugin is not enabled.
+        if (!is_enabled_auth('oidc')) {
+            throw new \moodle_exception('erroroidcnotenabled', 'auth_oidc', null, null, '1');
+        }
+
         if (!empty($tokenrec)) {
             // Already connected user.
             if (empty($tokenrec->userid)) {
@@ -452,14 +461,20 @@ class authcode extends base {
             $username = $user->username;
             $this->updatetoken($tokenrec->id, $authparams, $tokenparams);
             $user = authenticate_user_login($username, null, true);
-            complete_user_login($user);
+
+            if (!empty($user)) {
+                complete_user_login($user);
+            } else {
+                // There was a problem in authenticate_user_login.
+                throw new \moodle_exception('errorauthgeneral', 'auth_oidc', null, null, '2');
+            }
+
             return true;
         } else {
-            // No existing token, user not connected.
-            //
-            // Possibilities:
-            //     - Matched user.
-            //     - New user (maybe create).
+            /* No existing token, user not connected. Possibilities:
+                - Matched user.
+                - New user (maybe create).
+            */
 
             // Generate a Moodle username.
             // Use 'upn' if available for username (Azure-specific), or fall back to lower-case oidcuniqid.
@@ -519,13 +534,13 @@ class authcode extends base {
                     $DB->update_record('auth_oidc_token', $updatedtokenrec);
                 }
                 complete_user_login($user);
-                return true;
             } else {
                 // There was a problem in authenticate_user_login. Clean up incomplete token record.
                 if (!empty($tokenrec)) {
                     $DB->delete_records('auth_oidc_token', ['id' => $tokenrec->id]);
                 }
-                throw new \moodle_exception('errorauthgeneral', 'auth_oidc', null, null, '2');
+
+                redirect($CFG->wwwroot, get_string('errorauthgeneral', 'auth_oidc'), null, \core\output\notification::NOTIFY_ERROR);
             }
 
             return true;
