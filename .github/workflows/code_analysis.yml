@@ -52,6 +52,4 @@ jobs:
         
       - name: Run psalm
         run: ./vendor/bin/psalm --output-format=github
-        with:
-            security_analysis: true
-            report_file: results.sarif
+       
