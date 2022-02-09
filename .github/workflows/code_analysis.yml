@@ -40,7 +40,7 @@ jobs:
       - name: Copy plugin
         run: |
          mkdir ./testdir
-         cp -r ./plugin/mod/scormengine/ ./testdir
+         cp -r ./plugin/mod/scormengine/. ./testdir
          ls -al
          ls -al ./testdir
 
