@@ -19,6 +19,7 @@ $CFG->dboptions = array (
 );
 
 $CFG->wwwroot   = '{SITE_URL}';
+$CFG->httpswwwroot   = '{SITE_URL_HTTPS}';
 $CFG->dataroot  = '{SITE_MOODLEDATA}';
 $CFG->admin     = '{SITE_ADMIN}';
 
