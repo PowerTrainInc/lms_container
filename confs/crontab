@@ -1,0 +1,6 @@
+* * * * * /root/env.sh
+* * * * * source /tmp/env1 && /usr/bin/php73 /opt/app-root/src/admin/cli/cron.php >> /proc/1/fd/1
+0-58/2 * * * *  /bin/echo 'tick' >> /var/log/cron
+1-59/2 * * * *  /bin/echo 'tock' >> /var/log/cron
+
+

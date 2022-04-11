@@ -4,26 +4,51 @@ unset($CFG);
 global $CFG;
 $CFG = new stdClass();
 
-$CFG->dbtype    = '{DB_TYPE}';
+$CFG->dbtype    = getenv('DB_TYPE');
 $CFG->dblibrary = 'native';
-$CFG->dbhost    = '{DB_HOSTIP}';
-$CFG->dbname    = '{DB_NAME}';
-$CFG->dbuser    = '{DB_USER}';
-$CFG->dbpass    = '{DB_PASS}';
+$CFG->dbhost    = getenv('DB_HOST_NAME');
+$CFG->dbname    = getenv('DB_DATABASE_NAME');
+$CFG->dbuser    = getenv('DB_USER_NAME');
+$CFG->dbpass    = getenv('DB_PASSWORD');
 $CFG->prefix    = 'mdl_';
 $CFG->dboptions = array (
   'dbpersist' => 0,
-  'dbport' => '',
+  'dbport' => getenv('DB_PORT'),
   'dbsocket' => '',
+  'dbhandlesoptions' => false,
   'dbcollation' => 'utf8_unicode_ci',
+  'readonly' => [
+        'instance' => 
+        [
+            'dbhost' => getenv('DB_READER_HOST_NAME'), 
+            'dbport' => getenv('DB_READER_PORT'), 
+            'dbuser' => getenv('DB_READER_USER_NAME'), 
+            'dbpass' => getenv('DB_READER_USER_PASS')
+        ]
+   ]
 );
 
-$CFG->wwwroot   = '{SITE_URL}';
-$CFG->httpswwwroot   = '{SITE_URL_HTTPS}';
-$CFG->dataroot  = '{SITE_MOODLEDATA}';
-$CFG->admin     = '{SITE_ADMIN}';
+$CFG->wwwroot   = getenv('WEB_HOSTNAME');
+$CFG->httpswwwroot   = getenv('HTTPS_WEB_HOSTNAME');
 
+// Moodledata location //
+$CFG->dataroot = '/opt/app-root/data';
+$CFG->tempdir = '/opt/app-root/data/temp';
+$CFG->cachedir = '/opt/app-root/data/cache';
+$CFG->localcachedir = '/opt/app-root/local';
+
+$CFG->admin = 'admin';
 $CFG->directorypermissions = 0770;
+
+//Debugging options
+if(getenv('DEBUGGING_TOGGLE') == 1){
+	@error_reporting(E_ALL | E_STRICT);   // NOT FOR PRODUCTION SERVERS!
+	@ini_set('display_errors', '1');         // NOT FOR PRODUCTION SERVERS!
+	$CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!
+	$CFG->debugdisplay = 1;              // NOT FOR PRODUCTION SERVERS!
+} else {
+	// Do nothing, debuging disabled by default
+}
 
 #Best practices CR-014
 $CFG->preventexecpath = true;
@@ -32,26 +57,26 @@ $CFG->pathtogs = '/usr/bin/gs';
 $CFG->aspellpath = '/usr/bin/aspell';
 $CFG->pathtopython = '/usr/bin/python';
 
-$CFG->passwordpolicy = {PASSWORD_POLICY};
-$CFG->minpasswordlength = {PASSWORD_LENGTH};
-$CFG->minpassworddigits = {MIN_DIGITS};
-$CFG->minpasswordlower = {MIN_LOWERCASE};
-$CFG->minpasswordupper = {MIN_UPPERCASE};
-$CFG->minpasswordnonalphanum = {MIN_NONALPHA};
-$CFG->maxconsecutiveidentchars = {MAX_CONSECUTIVE};
-$CFG->passwordreuselimit = {MIN_ROTATIONREUSE};
-$CFG->passwordchangelogout = {PASSWORD_FORCELOGOUT};
+$CFG->passwordpolicy = getenv('PASSWORD_POLICY');
+$CFG->minpasswordlength = getenv('PASSWORD_LENGTH');
+$CFG->minpassworddigits = getenv('MIN_DIGITS');
+$CFG->minpasswordlower = getenv('MIN_LOWERCASE');
+$CFG->minpasswordupper = getenv('MIN_UPPERCASE');
+$CFG->minpasswordnonalphanum = getenv('MIN_NONALPHA');
+$CFG->maxconsecutiveidentchars = getenv('MAX_CONSECUTIVE');
+$CFG->passwordreuselimit = getenv('MIN_ROTATIONREUSE');
+$CFG->passwordchangelogout = getenv('PASSWORD_FORCELOGOUT');
 
-$CFG->lockoutthreshold = {LOCKOUT_THRESHOLD};
-$CFG->lockoutwindow = {LOCKOUT_WINDOW};
-$CFG->lockoutduration = {LOCKOUT_DURATION};
+$CFG->lockoutthreshold = getenv('LOCKOUT_THRESHOLD');
+$CFG->lockoutwindow = getenv('LOCKOUT_WINDOW');
+$CFG->lockoutduration = getenv('LOCKOUT_DURATION');
 
-$CFG->cronclionly = {CRON_CLIONLY};
+//$CFG->cronclionly = {CRON_CLIONLY};
 
-$CFG->guestloginbutton = {GUESTLOGINBUTTON};
+$CFG->guestloginbutton = getenv('GUESTLOGINBUTTON');
 
-$CFG->cookiesecure = {SECURE_COOKIES};
-$CFG->cookiehttponly = {HTTP_ONLY_COOKIES};
+$CFG->cookiesecure = getenv('SECURE_COOKIES');
+$CFG->cookiehttponly = getenv('HTTP_ONLY_COOKIES');
 
 $CFG->passwordsaltmain = 'loi0Dlcyo2riKMh3MVQ)Pe?]d';
 
