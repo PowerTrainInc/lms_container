@@ -28,8 +28,12 @@ $CFG->dboptions = array (
    ]
 );
 
-$CFG->wwwroot   = getenv('WEB_HOSTNAME');
-$CFG->httpswwwroot   = getenv('HTTPS_WEB_HOSTNAME');
+// Allow HTTPS mode to be toggled
+if(getenv('HTTPS_TOGGLE') != 1){
+	$CFG->wwwroot   = getenv('WEB_HOSTNAME');
+} else {
+	$CFG->httpswwwroot   = getenv('HTTPS_WEB_HOSTNAME');
+}
 
 // Moodledata location //
 $CFG->dataroot = '/opt/app-root/data';
@@ -79,6 +83,23 @@ $CFG->cookiesecure = getenv('SECURE_COOKIES');
 $CFG->cookiehttponly = getenv('HTTP_ONLY_COOKIES');
 
 $CFG->passwordsaltmain = 'loi0Dlcyo2riKMh3MVQ)Pe?]d';
+
+
+//Toggle the hard-configured redis server or not.
+if(getenv('REDIS_TOGGLE') == 1){
+	//  Redis session handler (requires redis server and redis extension):
+	$CFG->session_handler_class = '\core\session\redis';
+	$CFG->session_redis_host = getenv('REDIS_HOST');
+	$CFG->session_redis_port = getenv('REDIS_PORT');  // Optional.
+	$CFG->session_redis_database = 0;  // Optional, default is db 0.
+	$CFG->session_redis_auth = getenv('REDIS_AUTH_TOKEN'); // Optional, default is don't set one.
+	$CFG->session_redis_acquire_lock_timeout = 120;
+	$CFG->session_redis_lock_expire = 7200;
+	$CFG->session_redis_lock_retry = 100; // Optional wait between lock attempts in ms, default is 100.
+	$CFG->session_redis_serializer_use_igbinary = false; // Optional, default is PHP builtin serializer.
+} else {
+	//Do nothing, this will let the internal defined caching engines take precedence
+}
 
 require_once(dirname(__FILE__) . '/lib/setup.php');
 
