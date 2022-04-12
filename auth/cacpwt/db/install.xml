@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="auth/cacpwt/db" VERSION="20220406" COMMENT="XMLDB file for Moodle auth/cacpwt"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="auth_cacpwt" COMMENT="Default comment for auth_cacpwt, please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="username" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Username being created."/>
+        <FIELD NAME="email" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Email address of the new user."/>
+        <FIELD NAME="firstname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="New user firstname."/>
+        <FIELD NAME="lastname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="New user lastname."/>
+        <FIELD NAME="dodid" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="DOD ID"/>
+        <FIELD NAME="audit" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Signup security audit field."/>
+        <FIELD NAME="suspended" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Is the user suspended?"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="username" UNIQUE="true" FIELDS="username"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="auth_cacpwt_import_even" COMMENT="Import data.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dodid" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="DODID"/>
+        <FIELD NAME="auth_required" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Is authorization required based on the organization?"/>
+        <FIELD NAME="bypass_dmdc" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Bypass DMDC?"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dodid" UNIQUE="true" FIELDS="dodid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="auth_cacpwt_import_odd" COMMENT="Import data.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dodid" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="DODID"/>
+        <FIELD NAME="auth_required" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Is authorization required based on the organization?"/>
+        <FIELD NAME="bypass_dmdc" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Bypass DMDC?"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dodid" UNIQUE="true" FIELDS="dodid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

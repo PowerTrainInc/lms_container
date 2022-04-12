@@ -1,0 +1,19 @@
+#cacpwt_form .mform {
+    display: inline-block;
+    margin: auto;
+    font-size: 1.2em;
+}
+
+#cacpwt_form .mform label {
+    min-width: 200px;
+    margin-left: -150px;
+    text-align: right;
+}
+
+#cacpwt_form .invalid-feedback {
+    text-align: left;
+}
+
+#cacpwt_form input[type=text] {
+    width: 300px;
+}

@@ -174,8 +174,7 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      * @return Redis
      */
     protected function new_redis($server, $prefix = '', $password = '') {
-        /* ORIGINAL OVERWRITTEN BY COMMUNITY PATCH MODIFICATION FOR NAVY TLS REDIS
-		$redis = new Redis();
+        $redis = new Redis();
         // Check if it isn't a Unix socket to set default port.
         $port = ($server[0] === '/') ? null : 6379;
         if (strpos($server, ':')) {
@@ -183,24 +182,6 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
             $server = $serverconf[0];
             $port = $serverconf[1];
         }
-		*/
-		
-		// COMMUNITY PATCH FOR TLS REDIS
-		$redis = new Redis();
-		// Check if it isn't a Unix socket to set default port.
-		$port = ($server[0] === '/') ? null : 6379;
-
-		// You can supply eg tls://my.redis.host:6380/ for it to work
-		// Check for any protocol requirements eg TLS that have been specified.
-		if (strpos($server, ':')) {
-			$serverconf = parse_url($server);
-
-			$port = $serverconf['port'] ?? $port;
-			$scheme = $serverconf['scheme'] ?? '';
-			$host = $serverconf['host'] ?? '';
-			$server = (strlen($scheme) ? $scheme . '://' : '');
-			$server .= $host;
-		}
 
         try {
             if ($redis->connect($server, $port)) {
