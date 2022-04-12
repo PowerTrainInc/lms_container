@@ -174,14 +174,27 @@ class cachestore_redis extends cache_store implements cache_is_key_aware, cache_
      * @return Redis
      */
     protected function new_redis($server, $prefix = '', $password = '') {
-        $redis = new Redis();
-        // Check if it isn't a Unix socket to set default port.
-        $port = ($server[0] === '/') ? null : 6379;
-        if (strpos($server, ':')) {
-            $serverconf = explode(':', $server);
-            $server = $serverconf[0];
-            $port = $serverconf[1];
-        }
+		$redis = new Redis();
+		// Check if it isn't a Unix socket to set default port.
+		$port = ($server[0] === '/') ? null : 6379;
+
+		//if (strpos($server, ':')) {
+        //    $serverconf = explode(':', $server);
+        //    $server = $serverconf[0];
+        //    $port = $serverconf[1];
+        //}
+		
+		// TLS SUPPORT CORE CHANGE COMMUNITY PATCH
+		if (strpos($server, ':')) {
+			$serverconf = parse_url($server);
+
+			$port = $serverconf['port'] ?? $port;
+			$scheme = $serverconf['scheme'] ?? '';
+			$host = $serverconf['host'] ?? '';
+			$server = (strlen($scheme) ? $scheme . '://' : '');
+			$server .= $host;
+		}
+
 
         try {
             if ($redis->connect($server, $port)) {
