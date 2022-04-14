@@ -28,12 +28,7 @@ $CFG->dboptions = array (
    ]
 );
 
-// Allow HTTPS mode to be toggled
-if(getenv('HTTPS_TOGGLE') != 1){
-	$CFG->wwwroot   = getenv('WEB_HOSTNAME');
-} else {
-	$CFG->httpswwwroot   = getenv('HTTPS_WEB_HOSTNAME');
-}
+$CFG->wwwroot   = getenv('WEB_HOSTNAME');
 
 // Moodledata location //
 $CFG->dataroot = '/opt/app-root/data';
