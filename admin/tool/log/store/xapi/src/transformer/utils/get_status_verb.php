@@ -19,7 +19,7 @@ defined('MOODLE_INTERNAL') || die();
 
 function get_status_verb($res, $lang) {
     return (
-        ($res['success'] == 1) ? 
+        ($res['success'] == 1) ?
         [
             'id' => 'http://adlnet.gov/expapi/verbs/passed',
             'display' => [

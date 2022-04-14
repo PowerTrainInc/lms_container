@@ -77,10 +77,10 @@ function numerical(array $config, \stdClass $event, \stdClass $questionattempt, 
             ],
         ]
     ]];
-
-    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    // }
-
+    /*
+        if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+        $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+        }
+    */
     return $stmnt;
 }

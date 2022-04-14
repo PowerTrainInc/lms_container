@@ -23,58 +23,58 @@ use src\transformer\utils as utils;
 // for future reference.. moodle logstore's scoreraw event is about the course, not the sco
 function scoreraw_submitted(array $config, \stdClass $event) {
     try {
+        $repo = $config['repo'];
+        $user = $repo->read_record_by_id('user', $event->userid);
+        $course = $repo->read_record_by_id('course', $event->courseid);
+        $lang = utils\get_course_lang($course);
+        // scorm is the scorm course
+        $scorm = $repo->read_record_by_id('scorm', $event->objectid);
 
-    
-    $repo = $config['repo'];
-    $user = $repo->read_record_by_id('user', $event->userid);
-    $course = $repo->read_record_by_id('course', $event->courseid);
-    $lang = utils\get_course_lang($course);
-    // scorm is the scorm course
-    $scorm = $repo->read_record_by_id('scorm', $event->objectid);
+        $unserializedcmi = unserialize($event->other);
+        $attempt = $unserializedcmi['attemptid'];
 
-    $unserializedcmi = unserialize($event->other);
-    $attempt = $unserializedcmi['attemptid'];
+        $object = null;
+        $sco = null;
+        $scormscoestracks = null;
 
-    $object = null;
-    $sco = null;
-    $scormscoestracks = null;
-    
-    if ($event->objecttable == 'scorm_scoes_track') {
-        $scormscoestracks = $repo->read_record('scorm_scoes_track', [
+        if ($event->objecttable == 'scorm_scoes_track') {
+            $scormscoestracks = $repo->read_record('scorm_scoes_track', [
             'userid' => $user->id,
             'scormid' => $event->objectid,
             'attempt' => $attempt,
             'timemodified' => $event->timecreated,
             'element' => $unserializedcmi['cmielement']
-        ]);
-        if (isset($scormscoestracks) && isset($scormscoestracks->scoid)) {
-            $sco = $repo->read_record_by_id("scorm_scoes", $scormscoestracks->scoid);
-        } else {
-            return [];
+            ]);
+            if (isset($scormscoestracks) && isset($scormscoestracks->scoid)) {
+                $sco = $repo->read_record_by_id("scorm_scoes", $scormscoestracks->scoid);
+            } else {
+                return [];
+            }
         }
-    }
 
-    if (isset($sco)) {
-        $object = utils\get_activity\scorm_sco($config, $attempt, $scorm, $lang, $sco);
-    } else {
-        $object = utils\get_activity\course_scorm($config, $event->objectid, $scorm, $lang);
-    }
+        if (isset($sco)) {
+            $object = utils\get_activity\scorm_sco($config, $attempt, $scorm, $lang, $sco);
+        } else {
+            $object = utils\get_activity\course_scorm($config, $event->objectid, $scorm, $lang);
+        }
 
-    $rawscore = floatval($unserializedcmi['cmivalue']);
-    
-    $ctxscormprofile = utils\get_activity\scorm_profile();
-    $ctxmoodlecourse = utils\get_activity\course($config, $course);
+        $rawscore = floatval($unserializedcmi['cmivalue']);
 
-    $context = utils\get_activity\netc_context($config, $event, $course, $object, $attempt);
-    array_push($context['contextActivities']['grouping'], $ctxmoodlecourse);
-    array_push($context['contextActivities']['category'], $ctxscormprofile);
+        $ctxscormprofile = utils\get_activity\scorm_profile();
+        $ctxmoodlecourse = utils\get_activity\course($config, $course);
 
-    if (isset($sco)) {
-        array_push($context['contextActivities']['grouping'], 
-            utils\get_activity\course_scorm($config, $event->objectid, $scorm, $lang));
-    }
+        $context = utils\get_activity\netc_context($config, $event, $course, $object, $attempt);
+        array_push($context['contextActivities']['grouping'], $ctxmoodlecourse);
+        array_push($context['contextActivities']['category'], $ctxscormprofile);
 
-    return [[
+        if (isset($sco)) {
+            array_push(
+                $context['contextActivities']['grouping'],
+                utils\get_activity\course_scorm($config, $event->objectid, $scorm, $lang)
+            );
+        }
+
+        return [[
         'actor' => utils\get_user($config, $user),
         'verb' => [
             'id' => 'http://adlnet.gov/expapi/verbs/scored',
@@ -90,9 +90,9 @@ function scoreraw_submitted(array $config, \stdClass $event) {
             ],
         ],
         'context' => $context
-    ]];
+            ]];
     } catch (\Throwable $th) {
-        error_log(print_r($th->getMessage(), true));
+        // error_log(print_r($th->getMessage(), true));
         return [];
     }
 }

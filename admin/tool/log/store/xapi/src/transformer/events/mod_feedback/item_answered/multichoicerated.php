@@ -35,7 +35,7 @@ function multichoicerated(array $config, \stdClass $event, \stdClass $feedbackva
             'id' => strval($id),
             'description' => [
                 $lang => str_replace('<<<<<1', '', $name),
-            ],            
+            ],
         ];
     }, $presentedchoices, array_keys($presentedchoices));
 

@@ -29,9 +29,9 @@ function sco_attempt($userid, $scorm) {
 
     // Find the last attempt number for the given user id and scorm id.
     $sql = "SELECT MAX(attempt)
-              FROM {scorm_scoes_track}
-             WHERE userid = ? AND scormid = ?";
+            FROM {scorm_scoes_track}
+            WHERE userid = ? AND scormid = ?";
     $lastattempt = $DB->get_field_sql($sql, array($userid, $scorm->id));
-    error_log("sco_attempt: $lastattempt");
+    // error_log("sco_attempt: $lastattempt");
     return $lastattempt;
 }

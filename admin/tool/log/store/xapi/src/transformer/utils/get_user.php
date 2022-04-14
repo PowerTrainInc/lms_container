@@ -30,7 +30,7 @@ function get_user(array $config, \stdClass $user) {
             'name' => $userid
         ]
     ];
-
+    /*
     // The following email validation matches that in Learning Locker
     // $hasvalidemail = mb_ereg_match("[A-Z0-9\\.\\`\\'_%+-]+@[A-Z0-9.-]+\\.[A-Z]{1,63}$", $user->email, "i");
 
@@ -58,4 +58,5 @@ function get_user(array $config, \stdClass $user) {
     //         'name' => strval($user->id),
     //     ],
     // ];
+    */
 }

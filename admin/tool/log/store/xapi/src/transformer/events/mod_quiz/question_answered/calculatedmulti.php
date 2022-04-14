@@ -27,18 +27,12 @@ function calculatedmulti(array $config, \stdClass $event, \stdClass $questionatt
     $quiz = $repo->read_record_by_id('quiz', $attempt->quiz);
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
     $lang = utils\get_course_lang($course);
-    
     $qsplit = explode(': ', utils\get_string_html_removed($questionattempt->questionsummary));
     $questions = explode('; ', $qsplit[1]);
-
-    // utils\log_to_error_file($qsplit, 'qsplit');
-    // utils\log_to_error_file($questions, 'questions');
-    
     $correctResponsesPattern = '';
     $responesPattern = '';
-    
     $choices = array();
-    
+
     for ($i = 0; $i < count($questions); $i++) {
         $id = ($i + 1);
         $choices[] = [
@@ -47,7 +41,7 @@ function calculatedmulti(array $config, \stdClass $event, \stdClass $questionatt
                 $lang => $questions[$i]
             ]
         ];
-        
+
         if ($questionattempt->rightanswer == $questions[$i]) {
             $correctResponsesPattern = $id < 10 ? 'choice0'.$id : 'choice'.$id;
         }
@@ -83,7 +77,7 @@ function calculatedmulti(array $config, \stdClass $event, \stdClass $questionatt
         'result' => [
             'response' => $responesPattern,
             'success' => $questionattempt->rightanswer == $questionattempt->responsesummary,
-            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false            
+            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false
         ],
         'context' => [
             'platform' => $config['source_name'],
@@ -104,10 +98,10 @@ function calculatedmulti(array $config, \stdClass $event, \stdClass $questionatt
             ],
         ]
     ]];
-
-    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    // }
-
+    /*
+        if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+        $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+        }
+    */
     return $stmnt;
 }

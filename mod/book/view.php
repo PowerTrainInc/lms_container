@@ -72,7 +72,7 @@ if ($allowedit) {
 $chapters = book_preload_chapters($book);
 
 if ($allowedit and !$chapters) {
-    redirect('edit.php?cmid='.$cm->id); // No chapters - add new one.
+    redirect($CFG->wwwroot.'/mod/book/edit.php?cmid='.$cm->id); // No chapters - add new one.
 }
 // Check chapterid and read chapter data
 if ($chapterid == '0') { // Go to first chapter if no given.

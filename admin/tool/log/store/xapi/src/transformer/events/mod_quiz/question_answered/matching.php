@@ -76,7 +76,6 @@ function matching(array $config, \stdClass $event, \stdClass $questionattempt, \
             );
     }, $subquestions);
 
- 
     $responsePattern = array_reduce(
         explode('; ', $questionattempt->responsesummary),
         function ($reduction, $selection) use($sourceAnswers, $targetAnswers) {
@@ -139,7 +138,7 @@ function matching(array $config, \stdClass $event, \stdClass $questionattempt, \
         'result' => [
             'response' => isset($questionattempt->responsesummary) ? $formattedResult : "",
             'success' => (strcasecmp($questionattempt->rightanswer, $questionattempt->responsesummary) == 0),
-            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false            
+            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false
         ],
         'context' => [
             'platform' => $config['source_name'],
@@ -160,10 +159,10 @@ function matching(array $config, \stdClass $event, \stdClass $questionattempt, \
             ],
         ]
     ]];
-
-    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    // }
-
+    /*
+        if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+            $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+        }
+    */
     return $stmnt;
 }

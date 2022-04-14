@@ -30,7 +30,7 @@ $id = required_param('id', PARAM_INT);
 $templateid = optional_param('templateid', false, PARAM_INT);
 
 if (!$templateid) {
-    redirect('edit.php?id='.$id);
+    redirect($CFG->wwwroot.'/mod/feedback/edit.php.php?id='.$id);
 }
 
 $url = new moodle_url('/mod/feedback/use_templ.php', array('id'=>$id, 'templateid'=>$templateid));
@@ -50,10 +50,10 @@ $mform = new mod_feedback_use_templ_form();
 $mform->set_data(array('id' => $id, 'templateid' => $templateid));
 
 if ($mform->is_cancelled()) {
-    redirect('edit.php?id='.$id.'&do_show=templates');
+    redirect($CFG->wwwroot.'/mod/feedback/edit.php.php?id='.$id.'&do_show=templates');
 } else if ($formdata = $mform->get_data()) {
     feedback_items_from_template($feedback, $templateid, $formdata->deleteolditems);
-    redirect('edit.php?id=' . $id);
+    redirect($CFG->wwwroot.'/mod/feedback/edit.php.php?id=' . $id);
 }
 
 /// Print the page header

@@ -32,9 +32,12 @@ defined('MOODLE_INTERNAL') || die();
  */
 function scormengine_supports($feature) {
     switch ($feature) {
-        case FEATURE_COMPLETION_HAS_RULES: return true;
-        case FEATURE_NO_VIEW_LINK: return false;
-        case FEATURE_GRADE_HAS_GRADE: return true;
+        case FEATURE_COMPLETION_HAS_RULES:
+return true;
+        case FEATURE_NO_VIEW_LINK:
+return false;
+        case FEATURE_GRADE_HAS_GRADE:
+return true;
         case FEATURE_MOD_INTRO:
             return true;
         default:
@@ -42,14 +45,11 @@ function scormengine_supports($feature) {
     }
 }
 
-function scormengine_grade_item_update($modinstance, $grades=NULL)
-{
-    
+function scormengine_grade_item_update($modinstance, $grades=null) {
 
 }
 
-function scormengine_update_grades($modinstance, $userid=0, $nullifnone=true)
-{
+function scormengine_update_grades($modinstance, $userid=0, $nullifnone=true) {
 }
 /**
  * Saves a new instance of the mod_scormengine into the database.
@@ -113,8 +113,7 @@ function scormengine_delete_instance($id) {
 
 
 
-function se_get($url)
-{
+function se_get($url) {
     $settings = get_config('scormengine');
     $ch = curl_init($url);
     console_log("GET ".$settings->endpoint."/RusticiEngine/api/v2".$url);
@@ -125,7 +124,7 @@ function se_get($url)
     $verbose = fopen('php://temp', 'rw+');
 
     curl_setopt($ch, CURLOPT_STDERR , $verbose);
-    curl_setopt($ch, CURLOPT_VERBOSE  , TRUE);
+    curl_setopt($ch, CURLOPT_VERBOSE  , true);
 
     $headers = array(
         'Authorization: Basic '. base64_encode($settings->username.':'.$settings->password),
@@ -146,8 +145,7 @@ function se_get($url)
     return $obj;
 }
 
-function se_delete($url)
-{
+function se_delete($url) {
     $settings = get_config('scormengine');
     $ch = curl_init($url);
     console_log("GET ".$settings->endpoint."/RusticiEngine/api/v2".$url);
@@ -158,7 +156,7 @@ function se_delete($url)
     $verbose = fopen('php://temp', 'rw+');
 
     curl_setopt($ch, CURLOPT_STDERR , $verbose);
-    curl_setopt($ch, CURLOPT_VERBOSE  , TRUE);
+    curl_setopt($ch, CURLOPT_VERBOSE  , true);
 
     $headers = array(
         'Authorization: Basic '. base64_encode($settings->username.':'.$settings->password),
@@ -179,16 +177,15 @@ function se_delete($url)
     return $obj;
 }
 
-function uuid(){
+function uuid() {
     $data = random_bytes(16);
-    $data[6] = chr(ord($data[6]) & 0x0f | 0x40); 
-    $data[8] = chr(ord($data[8]) & 0x3f | 0x80); 
+    $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+    $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
-function se_postJSON($url,$body)
-{
-    $data_string = json_encode($body);
+function se_postjson($url, $body) {
+    $datastring = json_encode($body);
     $settings = get_config('scormengine');
     $ch = curl_init($url);
     console_log("POST ".$settings->endpoint."/RusticiEngine/api/v2".$url);
@@ -200,9 +197,9 @@ function se_postJSON($url,$body)
     $verbose = fopen('php://temp', 'rw+');
 
     curl_setopt($ch, CURLOPT_STDERR , $verbose);
-    curl_setopt($ch, CURLOPT_VERBOSE  , TRUE);
+    curl_setopt($ch, CURLOPT_VERBOSE  , true);
     curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string );
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $datastring );
 
     $headers = array(
         'Authorization: Basic '. base64_encode($settings->username.':'.$settings->password),
@@ -224,13 +221,12 @@ function se_postJSON($url,$body)
     return $obj;
 }
 
-function se_postFile($url,$filename,$filepath)
-{
-   
+function se_postfile($url, $filename, $filepath) {
+
     $settings = get_config('scormengine');
     $ch = curl_init($url);
     console_log("POST ".$settings->endpoint."/RusticiEngine/api/v2".$url);
-    
+
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_URL, $settings->endpoint."/RusticiEngine/api/v2".$url);
@@ -238,29 +234,29 @@ function se_postFile($url,$filename,$filepath)
     $verbose = fopen('php://temp', 'rw+');
 
     curl_setopt($ch, CURLOPT_STDERR , $verbose);
-    curl_setopt($ch, CURLOPT_VERBOSE  , TRUE);
+    curl_setopt($ch, CURLOPT_VERBOSE  , true);
     curl_setopt($ch, CURLOPT_POST, 1);
 
     $metadata = array(
-        "title"=>  $filename,
-        "titleLanguage"=> 'string',
-        "description"=> 'string',
-        "descriptionLanguage"=> 'string',
-        "duration"=> 'string',
-        "typicalTime"=> 'string',
-        "keywords"=> json_decode('{}'),
-        "pluginSpecificMetadata"=> json_decode('{}')
+        "title" => $filename,
+        "titleLanguage" => 'string',
+        "description" => 'string',
+        "descriptionLanguage" => 'string',
+        "duration" => 'string',
+        "typicalTime" => 'string',
+        "keywords" => json_decode('{}'),
+        "pluginSpecificMetadata" => json_decode('{}')
     );
-    $formData = [
+    $formdata = [
         // Pass a simple key-value pair
-        "contentMetadata"=> json_encode($metadata),
+        "contentMetadata" => json_encode($metadata),
         // Pass data via Buffers
         // Pass data via Streams
-        "file"=> new CurlFile($filepath, 'application/zip', $filename)
+        "file" => new CurlFile($filepath, 'application/zip', $filename)
 
     ];
 
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $formData );
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $formdata );
 
     $headers = array(
         'Authorization: Basic '. base64_encode($settings->username.':'.$settings->password),
@@ -282,27 +278,29 @@ function se_postFile($url,$filename,$filepath)
     return $obj;
 }
 
-function console_log($output, $with_script_tags = true) {
-   return;
-    $js_code = 'console.log(' . json_encode($output, JSON_HEX_TAG) . 
-');';
-    if ($with_script_tags) {
-        $js_code = '<script>' . $js_code . '</script>';
+function console_log($output, $withscripttags = true) {
+    return;
+    $jscode = 'console.log(' . json_encode($output, JSON_HEX_TAG) .
+    ');';
+    if ($withscripttags) {
+        $jscode = '<script>' . $jscode . '</script>';
     }
-    echo $js_code;
+    echo $jscode;
 }
 
 
-function scormengine_get_completion_state($course,$cm,$userid,$type) {
-    global $CFG,$DB;
+function scormengine_get_completion_state($course, $cm, $userid, $type) {
+    global $CFG, $DB;
     console_log("scormengine_get_completion_state");
     console_log($course->id);
     console_log($cm->id);
     console_log($userid);
     $moduleinstance = $DB->get_record('scormengine', array('id' => $cm->instance), '*', MUST_EXIST);
-    $existingReg = $DB->get_record('scormengine_registration', array('course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $userid, 'package_id' => $moduleinstance->package_id ), '*', IGNORE_MISSING);
-    console_log($existingReg);
-    if($existingReg->completion == 1)
+    $existingreg = $DB->get_record('scormengine_registration',
+        array('course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $userid, 'package_id' => $moduleinstance->package_id ), '*', IGNORE_MISSING);
+    console_log($existingreg);
+    if ($existingreg->completion == 1) {
         return true;
+    }
     return false;
 }

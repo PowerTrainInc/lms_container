@@ -20,8 +20,8 @@ defined('MOODLE_INTERNAL') || die();
 
 function log_to_error_file($data, $label = 'label') {
     $json_pretty_string = json_encode('-------------'.$label.'-------------', JSON_PRETTY_PRINT);
-    error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
+    // error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
 
     $json_pretty_string = json_encode($data, JSON_PRETTY_PRINT);
-    error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
+    // error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
 }

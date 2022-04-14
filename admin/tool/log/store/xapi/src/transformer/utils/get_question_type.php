@@ -26,7 +26,7 @@ function get_question_type($type) {
             return 'fill-in';
         case 'numerical':
             return 'numerical';
-        default: 
+        default:
             return '';
     }
 }

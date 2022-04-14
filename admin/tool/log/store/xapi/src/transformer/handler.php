@@ -29,7 +29,7 @@ function handler(array $config, array $events) {
                 $eventconfig = array_merge([
                     'event_function' => $eventfunction,
                 ], $config);
-                error_log("handler: $eventfunctionname");
+                // error_log("handler: $eventfunctionname");
                 $eventstatements = $eventfunction($eventconfig, $eventobj);
             } else {
                 $eventstatements = [];

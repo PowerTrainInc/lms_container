@@ -30,7 +30,7 @@ function multianswer(array $config, \stdClass $event, \stdClass $questionattempt
     $quiz = $repo->read_record_by_id('quiz', $attempt->quiz);
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
     $lang = utils\get_course_lang($course);
-    
+
     $maquestion = array();
     $oldwrappedids = $DB->get_field('question_multianswer', 'sequence', array('question' => $question->id));
     $multianswersids = explode(",", $oldwrappedids);
@@ -39,11 +39,10 @@ function multianswer(array $config, \stdClass $event, \stdClass $questionattempt
         return $repo->read_record_by_id('question', $q);
     }, $multianswersids);
 
-
     $responsesummary = explode('; ', $questionattempt->responsesummary);
 
     // get all answers
-    $answers = array_map(function ($item) use($repo) { 
+    $answers = array_map(function ($item) use($repo) {
         return $repo->read_records('question_answers', ['question' => $item]);
     }, $multianswersids);
 
@@ -59,24 +58,23 @@ function multianswer(array $config, \stdClass $event, \stdClass $questionattempt
     // build correct response pattern
     $stepCounter = 1;
     $correctResponsesPattern = array_reduce(
-        $correctAnswers, 
+        $correctAnswers,
         function ($reduction, $selection) use(&$stepCounter) {
             $count = $stepCounter < 10 ? 'step0'.$stepCounter++ : 'step'.$stepCounter++;
             $reduction = $reduction.$count.'[.]'.$selection->answer.'[,]';
             return $reduction;
         }, '');
 
-    $correctResponsesPattern = utils\str_replace_last('[,]', '', $correctResponsesPattern);  
+    $correctResponsesPattern = utils\str_replace_last('[,]', '', $correctResponsesPattern);
 
     $userAnswers = array_map(function($response){
         $ua = explode(': ', $response);
         return $ua[1];
     }, $responsesummary);
 
-
     $responsePattern = ''; 
     for ($i = 1; $i <= count($correctAnswers); $i++) {
-        $count = $i < 10 ? 'step0'.$i : 'step'.$i ;
+        $count = $i < 10 ? 'step0'.$i : 'step'.$i;
         $responsePattern = $responsePattern.$count.'[.]'.$userAnswers[$i].'[,]';
     }
     $responsePattern = utils\str_replace_last('[,]', '', $responsePattern);
@@ -90,7 +88,6 @@ function multianswer(array $config, \stdClass $event, \stdClass $questionattempt
             ]
         ];
     }, $maquestion);
-
 
     return [[
         'actor' => utils\get_user($config, $user),

@@ -15,13 +15,13 @@ if(!window.$)
             //var s = document.createElement("script");
             //s.type = "text/javascript";
             //s.src = "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js";
-            require("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js");
+            require(window.site_home + "/mod/scormengine/public/bootstrap.bundle.min.js");
             //document.head.appendChild(s);
         }
         s.src = window.site_home + "/mod/scormengine/public/dist/js/app.bundle.js";
 
     }
-    s.src = "https://code.jquery.com/jquery-3.6.0.min.js";
+    s.src = window.site_home + "/mod/scormengine/public/jquery-3.6.0.min.js";
     
  
     
@@ -32,7 +32,7 @@ else
 
     var s = document.createElement("script");
     s.type = "text/javascript";
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.12.1/polyfill.min.js";
+    s.src = window.site_home + "/mod/scormengine/public/polyfill.min.js";
     document.head.appendChild(s);
     
 

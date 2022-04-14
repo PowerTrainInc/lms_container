@@ -49,7 +49,7 @@ function course(array $config, \stdClass $course) {
             $courselang => htmlToPlainText($coursedescription)
         ];
     }
-
+    /*
     // if (utils\is_enabled_config($config, 'send_short_course_id')) {
     //     $object['definition']['extensions']['https://w3id.org/learning-analytics/learning-management-system/short-id'] = $course->shortname;
     // }
@@ -58,6 +58,6 @@ function course(array $config, \stdClass $course) {
     //     $courseidnumber = property_exists($course, 'idnumber') ? $course->idnumber : null;
     //     $object['definition']['extensions']['https://w3id.org/learning-analytics/learning-management-system/external-id'] = $courseidnumber;
     // }
-
+    */
     return $object;
 }

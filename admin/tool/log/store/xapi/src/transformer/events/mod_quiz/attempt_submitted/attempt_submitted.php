@@ -22,7 +22,7 @@ use src\transformer\utils as utils;
 
 function get_status_verb($res, $lang) {
     return (
-        ($res['success'] == 1) ? 
+        ($res['success'] == 1) ?
         [
             'id' => 'http://adlnet.gov/expapi/verbs/passed',
             'display' => [
@@ -37,7 +37,6 @@ function get_status_verb($res, $lang) {
         ]
     );
 }
-
 function attempt_submitted(array $config, \stdClass $event) {
     $repo = $config['repo'];
     $user = $repo->read_record_by_id('user', $event->relateduserid);
@@ -51,13 +50,12 @@ function attempt_submitted(array $config, \stdClass $event) {
         'iteminstance' => $quiz->id,
     ]);
 
-    // attemptgrade holds the grade for the quiz across all attempts, 
+    // attemptgrade holds the grade for the quiz across all attempts,
     // not necessarily the grade for this quiz attempt
     $attemptgrade = $repo->read_record('grade_grades', [
         'itemid' => $gradeitem->id,
         'userid' => $event->relateduserid
     ]);
-
 
     $lang = utils\get_course_lang($course);
     $result = utils\get_attempt_result($config, $attempt, $quiz, $gradeitem, $attemptgrade);

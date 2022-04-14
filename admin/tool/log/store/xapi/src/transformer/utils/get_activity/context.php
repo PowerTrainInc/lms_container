@@ -28,9 +28,11 @@ function netc_context($config, $event, $course, $xapiobject = null, $attempt = n
         'language' => $lang,
         'extensions' => $extensions,
         'contextActivities' => [
-            // 'grouping' => [
-            //     utils\get_activity\site($config)
-            // ],
+            /*
+                'grouping' => [
+                    utils\get_activity\site($config)
+                ],
+            */
             'category' => [
                 utils\get_activity\netc_profile(),
                 utils\get_activity\netc_elearning_profile(),

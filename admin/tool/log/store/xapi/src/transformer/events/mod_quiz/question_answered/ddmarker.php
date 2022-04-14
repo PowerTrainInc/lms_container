@@ -29,7 +29,7 @@ function ddmarker(array $config, \stdClass $event, \stdClass $questionattempt, \
     $attempt = $repo->read_record('quiz_attempts', ['uniqueid' => $questionattempt->questionusageid]);
     $quiz = $repo->read_record_by_id('quiz', $attempt->quiz);
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
-    $lang = utils\get_course_lang($course);   
+    $lang = utils\get_course_lang($course);
 
     $responsePattern = '';
     $correctResponsesPattern = '';
@@ -69,13 +69,6 @@ function ddmarker(array $config, \stdClass $event, \stdClass $questionattempt, \
 
     $correctResponsesPattern = utils\str_replace_last('[,]', '', $correctResponsesPattern);
     $formattedResult = utils\str_replace_last('[,]', '', $responsePattern);
-
-    utils\log_to_error_file($source,'$source');
-    utils\log_to_error_file($target,'$target');
-
-    // utils\log_to_error_file($question, 'question dragndrop');
-    // utils\log_to_error_file($correctResponsesPattern, 'correctResponsesPattern');
-    // utils\log_to_error_file($formattedResult, 'formattedResult');
 
     $stmnt = [[
         'actor' => utils\get_user($config, $user),
@@ -125,10 +118,10 @@ function ddmarker(array $config, \stdClass $event, \stdClass $questionattempt, \
             ],
         ]
     ]];
-
-    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    // }
-
+    /*
+    if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+        $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+    }
+    */
     return $stmnt;
 }

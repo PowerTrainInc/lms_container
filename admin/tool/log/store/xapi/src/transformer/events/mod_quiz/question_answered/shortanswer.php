@@ -29,7 +29,6 @@ function shortanswer(array $config, \stdClass $event, \stdClass $questionattempt
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
     $lang = utils\get_course_lang($course);
 
-
     return [[
         'actor' => utils\get_user($config, $user),
         'verb' => [

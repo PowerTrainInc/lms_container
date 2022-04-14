@@ -67,4 +67,3 @@ function get_scorm_result($repo, $currentscostatus) {
 
     return $result;
 }
-

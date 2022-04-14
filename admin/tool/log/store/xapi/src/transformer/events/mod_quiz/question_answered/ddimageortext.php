@@ -29,7 +29,7 @@ function ddimageortext(array $config, \stdClass $event, \stdClass $questionattem
     $attempt = $repo->read_record('quiz_attempts', ['uniqueid' => $questionattempt->questionusageid]);
     $quiz = $repo->read_record_by_id('quiz', $attempt->quiz);
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
-    $lang = utils\get_course_lang($course);   
+    $lang = utils\get_course_lang($course);
 
     $responsePattern = '';
     $correctResponsesPattern = '';
@@ -43,7 +43,7 @@ function ddimageortext(array $config, \stdClass $event, \stdClass $questionattem
         $sourceID = $id < 10 ? 'source0'.$id : 'source'.$id;
         $targetID = $id < 10 ? 'target0'.$id : 'target'.$id;
         $str = explode(' -> '.'{'.$id, $parsedRightAnswer[$i]);
-        $src = str_replace(['. ','}'], '', $str[1]);
+        $src = str_replace(['. ', '}'], '', $str[1]);
         $source[] = [
             'id' => $sourceID,
             'description' => [
@@ -96,7 +96,7 @@ function ddimageortext(array $config, \stdClass $event, \stdClass $questionattem
         'result' => [
             'response' => isset($questionattempt->responsesummary) ? $formattedResult : "",
             'success' => $questionattempt->rightanswer == $questionattempt->responsesummary,
-            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false            
+            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false
         ],
         'context' => [
             'platform' => $config['source_name'],
@@ -117,10 +117,10 @@ function ddimageortext(array $config, \stdClass $event, \stdClass $questionattem
             ],
         ]
     ]];
-
-    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    // }
-
+    /*
+        if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+            $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+        }
+    */
     return $stmnt;
 }

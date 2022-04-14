@@ -26,8 +26,10 @@ function course_scorm(array $config, $cmid, $scorm, $lang, $acttype = null) {
     try {
         $courseid = $scorm->id;
         $url = $config['app_url'];
-        $id = "$url/mod/scorm/$courseid";  
-    } catch (\Throwable $th) { }
+        $id = "$url/mod/scorm/$courseid";
+    } catch (\Throwable $th) {
+        // left empty by previous developer
+    }
 
     return [
         'id' => $id,

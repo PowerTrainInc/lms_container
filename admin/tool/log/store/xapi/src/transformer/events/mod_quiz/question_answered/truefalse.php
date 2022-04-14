@@ -30,7 +30,6 @@ function truefalse(array $config, \stdClass $event, \stdClass $questionattempt, 
     $lang = utils\get_course_lang($course);
     $studentanswer = utils\get_string_html_removed($questionattempt->responsesummary);
 
-    
     $stmnt = [[
         'actor' => utils\get_user($config, $user),
         'verb' => [
@@ -78,10 +77,10 @@ function truefalse(array $config, \stdClass $event, \stdClass $questionattempt, 
             ],
         ]
     ]];
-   
-    // if (isset($studentanswer) && $studentanswer != "") {
-    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $studentanswer ? true : false ;
-    // }
-
+    /*
+        if (isset($studentanswer) && $studentanswer != "") {
+            $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $studentanswer ? true : false ;
+        }
+    */
     return $stmnt;
 }

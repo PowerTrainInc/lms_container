@@ -15,26 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace src\transformer\utils;
+
 defined('MOODLE_INTERNAL') || die();
 
-function get_value( $data, $key, $default = null ) {
-	$value = $default;
-	if ( is_array( $data ) && array_key_exists( $key, $data ) ) {
-		$value = $data[$key];
-	} else if ( is_object( $data ) && property_exists( $data, $key ) ) {
-		$value = $data->$key;
-	} else {
-		$segments = explode( '.', $key );
-		foreach ( $segments as $segment ) {
-			if ( is_array( $data ) && array_key_exists( $segment, $data ) ) {
-				$value = $data = $data[$segment];
-			} else if ( is_object( $data ) && property_exists( $data, $segment ) ) {
-				$value = $data = $data->$segment;
-			} else {
-				$value = $default;
-				break;
-			}
-		}
-	}
-	return $value;
+function get_value($data, $key, $default = null) {
+    $value = $default;
+    if (is_array($data) && array_key_exists($key, $data)) {
+        $value = $data[$key];
+    } elseif (is_object($data) && property_exists($data, $key)) {
+        $value = $data->$key;
+    } else {
+        $segments = explode('.', $key);
+        foreach ($segments as $segment) {
+            if (is_array($data) && array_key_exists($segment, $data)) {
+                $value = $data = $data[$segment];
+            } elseif (is_object($data) && property_exists($data, $segment)) {
+                $value = $data = $data->$segment;
+            } else {
+                $value = $default;
+                break;
+            }
+        }
+    }
+    return $value;
 }

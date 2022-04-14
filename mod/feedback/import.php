@@ -68,7 +68,7 @@ $mform->set_data($newformdata);
 $formdata = $mform->get_data();
 
 if ($mform->is_cancelled()) {
-    redirect('edit.php?id='.$id.'&do_show=templates');
+    redirect($CFG->wwwroot.'/mod/feedback/edit.php.php?id='.$id.'&do_show=templates');
 }
 
 // process if we are happy file is ok

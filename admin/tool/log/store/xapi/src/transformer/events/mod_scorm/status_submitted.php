@@ -22,67 +22,65 @@ use src\transformer\utils as utils;
 
 function status_submitted(array $config, \stdClass $event) {
     try {
+        $repo = $config['repo'];
+        $user = $repo->read_record_by_id('user', $event->userid);
+        $course = $repo->read_record_by_id('course', $event->courseid);
+        $lang = utils\get_course_lang($course);
+        $scorm = $repo->read_record_by_id('scorm', $event->objectid);
 
-    
-    $repo = $config['repo'];
-    $user = $repo->read_record_by_id('user', $event->userid);
-    $course = $repo->read_record_by_id('course', $event->courseid);
-    $lang = utils\get_course_lang($course);
-    $scorm = $repo->read_record_by_id('scorm', $event->objectid);
-    
-    $unserializedcmi = unserialize($event->other);
-    $attempt = $unserializedcmi['attemptid'];
+        $unserializedcmi = unserialize($event->other);
+        $attempt = $unserializedcmi['attemptid'];
 
-    $object = null;
-    $sco = null;
-    $scormscoestracks = null;
-    
+        $object = null;
+        $sco = null;
+        $scormscoestracks = null;
 
-    if ($event->objecttable == 'scorm_scoes_track') {
-        $scormscoestracks = $repo->read_record('scorm_scoes_track', [
+        if ($event->objecttable == 'scorm_scoes_track') {
+            $scormscoestracks = $repo->read_record('scorm_scoes_track', [
             'userid' => $user->id,
             'scormid' => $event->objectid,
             'attempt' => $unserializedcmi['attemptid'],
             'timemodified' => $event->timecreated,
             'element' => $unserializedcmi['cmielement']
-        ]);
+            ]);
 
-        if (isset($scormscoestracks) && isset($scormscoestracks->scoid)) {
-            $sco = $repo->read_record_by_id("scorm_scoes", $scormscoestracks->scoid);
-        } else {
-            return [];
+            if (isset($scormscoestracks) && isset($scormscoestracks->scoid)) {
+                $sco = $repo->read_record_by_id("scorm_scoes", $scormscoestracks->scoid);
+            } else {
+                return [];
+            }
         }
-    }
-        
-    if (isset($sco)) {
-        $object = utils\get_activity\scorm_sco($config, $attempt, $scorm, $lang, $sco);
-    } else {
-        $object = utils\get_activity\course_scorm($config, $event->objectid, $scorm, $lang);
-    }
 
+        if (isset($sco)) {
+            $object = utils\get_activity\scorm_sco($config, $attempt, $scorm, $lang, $sco);
+        } else {
+            $object = utils\get_activity\course_scorm($config, $event->objectid, $scorm, $lang);
+        }
 
-    $ctxmoodlecourse = utils\get_activity\course($config, $course);
-    
-    $ctxscormprofile = utils\get_activity\scorm_profile();
-    
-    $context = utils\get_activity\netc_context($config, $event, $course, $object, $unserializedcmi['attemptid']);
-    array_push($context['contextActivities']['grouping'], $ctxmoodlecourse);
-    array_push($context['contextActivities']['category'], $ctxscormprofile);
-    
-    if (isset($sco)) {
-        array_push($context['contextActivities']['grouping'], 
-            utils\get_activity\course_scorm($config, $event->contextinstanceid, $scorm, $lang));
-    }
+        $ctxmoodlecourse = utils\get_activity\course($config, $course);
 
-    $cmielement = $unserializedcmi['cmielement'];
-    $cmivalue = $unserializedcmi['cmivalue'];
+        $ctxscormprofile = utils\get_activity\scorm_profile();
 
-    $verb = utils\get_scorm_verb($cmivalue, $lang);
+        $context = utils\get_activity\netc_context($config, $event, $course, $object, $unserializedcmi['attemptid']);
+        array_push($context['contextActivities']['grouping'], $ctxmoodlecourse);
+        array_push($context['contextActivities']['category'], $ctxscormprofile);
 
-    // in the example content it set 'passed' last
-    if ($verb['id'] == 'http://adlnet.gov/expapi/verbs/passed' || $verb['id'] == 'http://adlnet.gov/expapi/verbs/failed') {
-        $result = utils\get_scorm_result($repo, $scormscoestracks);
-        $terminated = [
+        if (isset($sco)) {
+            array_push(
+                $context['contextActivities']['grouping'],
+                utils\get_activity\course_scorm($config, $event->contextinstanceid, $scorm, $lang)
+            );
+        }
+
+        $cmielement = $unserializedcmi['cmielement'];
+        $cmivalue = $unserializedcmi['cmivalue'];
+
+        $verb = utils\get_scorm_verb($cmivalue, $lang);
+
+        // in the example content it set 'passed' last
+        if ($verb['id'] == 'http://adlnet.gov/expapi/verbs/passed' || $verb['id'] == 'http://adlnet.gov/expapi/verbs/failed') {
+            $result = utils\get_scorm_result($repo, $scormscoestracks);
+            $terminated = [
             'actor' => utils\get_user($config, $user),
             'verb' => [
                 'id' => 'http://adlnet.gov/expapi/verbs/terminated',
@@ -93,30 +91,30 @@ function status_submitted(array $config, \stdClass $event) {
             'object' => $object,
             'timestamp' => utils\get_event_timestamp($event),
             'context' => $context
-        ];
-        if (isset($result)) {
-            $terminated['result'] = $result;
+            ];
+            if (isset($result)) {
+                $terminated['result'] = $result;
+            }
+            return [[
+            'actor' => utils\get_user($config, $user),
+            'verb' => $verb,
+            'object' => $object,
+            'timestamp' => utils\get_event_timestamp($event),
+            'context' => $context
+            ],
+            $terminated
+            ];
+        } else {
+            return [[
+            'actor' => utils\get_user($config, $user),
+            'verb' => $verb,
+            'object' => $object,
+            'timestamp' => utils\get_event_timestamp($event),
+            'context' => $context
+            ]];
         }
-        return [[
-            'actor' => utils\get_user($config, $user),
-            'verb' => $verb,
-            'object' => $object,
-            'timestamp' => utils\get_event_timestamp($event),
-            'context' => $context
-        ],
-        $terminated
-        ];
-    } else {
-        return [[
-            'actor' => utils\get_user($config, $user),
-            'verb' => $verb,
-            'object' => $object,
-            'timestamp' => utils\get_event_timestamp($event),
-            'context' => $context
-        ]];
-    }
     } catch (\Throwable $th) {
-        error_log(print_r($th->getMessage(), true));
+        // error_log(print_r($th->getMessage(), true));
         return [];
     }
 }

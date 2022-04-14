@@ -25,10 +25,10 @@
 require(__DIR__.'/../../config.php');
 require_once(__DIR__.'/lib.php');
 
-// Course_module ID, or
+
 $id = optional_param('id', 0, PARAM_INT);
 
-// ... module instance id.
+
 $s  = optional_param('s', 0, PARAM_INT);
 
 if ($id) {
@@ -47,16 +47,7 @@ require_login($course, true, $cm);
 
 $modulecontext = context_module::instance($cm->id);
 
-/*
-$event = \mod_scormengine\event\course_module_viewed::create(array(
-    'objectid' => $moduleinstance->id,
-    'context' => $modulecontext
-));
 
-$event->add_record_snapshot('course', $course);
-$event->add_record_snapshot('scormengine', $moduleinstance);
-$event->trigger();
-*/
 $PAGE->set_url('/mod/scormengine/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
@@ -69,71 +60,72 @@ console_log($USER);
 
 $button = '';
 $settings = get_config('scormengine');
-$existingReg = $DB->get_record('scormengine_registration', array("completion" => 0, 'course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $USER->id, 'package_id'=>$moduleinstance->package_id ), '*', IGNORE_MISSING);
-if( $existingReg == false)
-{
-   
-    $uuid =  uuid();
-    $launchLink = se_postJSON('/registrations/withLaunchLink', array(
+$existingreg = $DB->get_record('scormengine_registration',
+array("completion" => 0, 'course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $USER->id, 'package_id' => $moduleinstance->package_id ),
+ '*', IGNORE_MISSING);
+
+if ($existingreg == false) {
+
+    $uuid = uuid();
+    $launchlink = se_postJSON('/registrations/withLaunchLink', array(
         'registration' => array (
-            'courseId'=> $moduleinstance->package_id,
-            'learner'=> array (
-                'id'=> empty($USER->idnumber) ? $USER->username : $USER->idnumber,
-                'firstName'=> $USER->firstname,
-                'lastName'=> $USER->lastname,
+            'courseId' => $moduleinstance->package_id,
+            'learner' => array (
+                'id' => empty($USER->idnumber) ? $USER->username : $USER->idnumber,
+                'firstName' => $USER->firstname,
+                'lastName' => $USER->lastname,
             ),
-            'registrationId'=> $uuid,
-            'forCredit'=> true,
-            
+            'registrationId' => $uuid,
+            'forCredit' => true,
+
         ),
         'launchLink' => array (
             "redirectOnExitUrl" => $settings->site_home.'/mod/scormengine/return.php?rid='.$uuid.'&id='.$id
             )
         ));
 
-    if(!$launchLink)
-    {
+    if (!$launchlink) {
         echo "There was an error connecting to Scorm Engine.";
         return;
     }
-    $newReg = array(
-        'course_id' => $course->id, 
-        'mod_id' => $moduleinstance->id, 
-        "user_id" => $USER->id, 
-        "registration" => $uuid, 
-        'package_id'=>$moduleinstance->package_id,
+    $newreg = array(
+        'course_id' => $course->id,
+        'mod_id' => $moduleinstance->id,
+        "user_id" => $USER->id,
+        "registration" => $uuid,
+        'package_id' => $moduleinstance->package_id,
         "completion" => -1,
         "success" => 0,
         "score" => 0,
         "duration" => 0,
         "progress" => 0,
     );
-    $DB->insert_record('scormengine_registration', $newReg);
-    //header("Location: http://localhost:3005".$launchLink->launchLink);
+    $DB->insert_record('scormengine_registration', $newreg);
+
 
     $settings = get_config('scormengine');
 
     $button = "<a  class='btn btn-raised btn-primary' href='"
         .$settings->site_home.'/mod/scormengine/xapi_initialize.php?rid='.$uuid
-        .'&courselink='.urlencode($settings->launchPrefix.$launchLink->launchLink)."'>Start</a>";
+        .'&courselink='.urlencode($settings->launchPrefix.$launchlink->launchLink)."'>Start</a>";
 
     array('course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $USER->id );
 } else {
-  //console_log(  $existingReg);
-    $launchLink = se_postJSON('/registrations/'.$existingReg->registration."/launchLink", array (
-        "redirectOnExitUrl" => $settings->site_home.'/mod/scormengine/return.php?rid='.$existingReg->registration.'&id='.$id  
+
+    $launchlink = se_postJSON('/registrations/'.$existingreg->registration."/launchLink", array (
+        "redirectOnExitUrl" => $settings->site_home.'/mod/scormengine/return.php?rid='.$existingreg->registration.'&id='.$id
     ));
 
-    if(!$launchLink)
-    {
+    if (!$launchlink) {
         echo "There was an error connecting to Scorm Engine.";
         return;
     }
-    
-    if ($existingReg->completion == -1)
-        $button = "<a class='btn btn-raised btn-primary' href='".$settings->launchPrefix.$launchLink->launchLink."' >Start</a>";
-    else
-        $button = "<a class='btn btn-raised btn-primary' href='".$settings->launchPrefix.$launchLink->launchLink."' >Resume</a>";
+
+    if ($existingreg->completion == -1) {
+        $button = "<a class='btn btn-raised btn-primary' href='".$settings->launchPrefix.$launchlink->launchLink."' >Start</a>";
+    } else {
+        $button = "<a class='btn btn-raised btn-primary' href='".$settings->launchPrefix.$launchlink->launchLink."' >Resume</a>";
+    }
 
 }
 

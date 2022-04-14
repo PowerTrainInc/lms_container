@@ -21,7 +21,7 @@ use src\transformer\utils as utils;
 
 function scorm_sco(array $config, $cmid, $scorm, $lang, $sco) {
     $scormname = property_exists($scorm, 'name') ? $scorm->name : 'SCORM';
-    $scotitle = property_exists($sco, 'title')? $sco->title : $scormname;
+    $scotitle = property_exists($sco, 'title') ? $sco->title : $scormname;
     $scoid = property_exists($sco, 'identifier') ? $sco->identifier : $cmid;
 
     $id = $config['app_url'].'/mod/scorm/view.php?id='.$scoid;
@@ -30,7 +30,9 @@ function scorm_sco(array $config, $cmid, $scorm, $lang, $sco) {
         $scoid = $sco->id;
         $url = $config['app_url'];
         $id = "$url/mod/scorm/$courseid/sco/$scoid";
-    } catch (\Throwable $th) { }
+    } catch (\Throwable $th) {
+        // empty catch left by previous developer
+    }
 
     return [
         'id' => $id,

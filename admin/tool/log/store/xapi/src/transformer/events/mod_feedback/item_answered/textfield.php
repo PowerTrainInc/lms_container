@@ -27,7 +27,6 @@ function textfield(array $config, \stdClass $event, \stdClass $feedbackvalue, \s
     $feedback = $repo->read_record_by_id('feedback', $feedbackitem->feedback);
     $lang = utils\get_course_lang($course);
 
-
     return [[
         'actor' => utils\get_user($config, $user),
         'verb' => [

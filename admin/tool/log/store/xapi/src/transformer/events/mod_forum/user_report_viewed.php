@@ -66,3 +66,4 @@ function user_report_viewed(array $config, \stdClass $event) {
 
     return[$statement];
 }
+

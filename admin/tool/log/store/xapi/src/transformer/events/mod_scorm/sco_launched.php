@@ -33,15 +33,15 @@ function sco_launched(array $config, \stdClass $event) {
         if ($event->objecttable == "scorm_scoes") {
             $sco = $repo->read_record_by_id($event->objecttable, $event->objectid);
             $scorm = $repo->read_record_by_id('scorm', $sco->scorm);
-        }  
+        }
     }
 
     $lang = utils\get_course_lang($course);
-    
+
     $object = utils\get_activity\scorm_sco(
-        $config, 
-        $event->objectid, 
-        $scorm, 
+        $config,
+        $event->objectid,
+        $scorm,
         $lang,
         $sco
     );

@@ -62,7 +62,7 @@ function match(array $config, \stdClass $event, \stdClass $questionattempt, \std
     $source = array_map(function ($item, $index) use ($lang) {
         $split = explode("\n -> ", $item);
         return array(
-            'id' => strval($index+1),
+            'id' => strval($index + 1),
             'description' => [
                 $lang => trim($split[0])
             ]
@@ -72,15 +72,12 @@ function match(array $config, \stdClass $event, \stdClass $questionattempt, \std
     $target = array_map(function ($item, $index) use ($lang) {
         $split = explode("\n -> ", $item);
         return array(
-            'id' => strval($index+1),
+            'id' => strval($index + 1),
             'description' => [
                 $lang => trim($split[1])
             ]
             );
     }, $parsedResponse, $indexes);
-  
-    // $json_pretty_string = json_encode('numerical'.$questionattempt, JSON_PRETTY_PRINT);
-    // error_log($json_pretty_string .PHP_EOL, 3, 'error.log');
 
     $cResponsePattern = substr_replace($responsePattern, '', $responsePattern.length - 3);
     $formattedResult = substr_replace($selections, '', $selections.length - 3);

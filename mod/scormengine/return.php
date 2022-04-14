@@ -26,9 +26,9 @@ require(__DIR__.'/../../config.php');
 require_once(__DIR__.'/lib.php');
 require_once(__DIR__.'/seo_xapi.php');
 
-// Course_module ID, or
+// Course_module ID, or.
 $rid = optional_param('rid', 0, PARAM_TEXT);
-// Course_module ID, or
+// Course_module ID, or.
 $id = optional_param('id', 0, PARAM_INT);
 
 // ... module instance id.
@@ -47,11 +47,11 @@ if ($id) {
 }
 
 
-$existingReg = $DB->get_record('scormengine_registration', array('course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $USER->id, "registration" => $rid ), '*', IGNORE_MISSING);
+$existingreg = $DB->get_record('scormengine_registration',
+    array('course_id' => $course->id, 'mod_id' => $moduleinstance->id, "user_id" => $USER->id, "registration" => $rid ), '*', IGNORE_MISSING);
 require_login($course, true, $cm);
 
-if($existingReg == false)
-{
+if ($existingreg == false) {
     echo $OUTPUT->header();
 
     echo "There was an error. This registration ID does not exist";
@@ -59,18 +59,6 @@ if($existingReg == false)
     return;
 }
 
-// $settings = get_config('scormengine');
-// header("Location: {$settings->site_home}/course/view.php?id=".$course->id."#section-0");
-/*
-$event = \mod_scormengine\event\course_module_viewed::create(array(
-    'objectid' => $moduleinstance->id,
-    'context' => $modulecontext
-));
-
-$event->add_record_snapshot('course', $course);
-$event->add_record_snapshot('scormengine', $moduleinstance);
-$event->trigger();
-*/
 
 
 console_log($USER);
@@ -78,57 +66,55 @@ console_log($USER);
 $link = '/registrations/' . $rid . '?includeRuntime=true&includeInteractionsAndObjectives=true&includeChildResults=true';
 $results = se_get($link);
 
-$wasAlreadyCompleted = $existingReg->completion == 1 ? true : false;
+$wasalreadycompleted = $existingreg->completion == 1 ? true : false;
 
-$existingReg->completion = 0;
-if($results->registrationCompletion == 'COMPLETED')
-    $existingReg->completion = 1;
-
-
-if($results->registrationSuccess == 'PASSED')
-    $existingReg->success = 1;
-$existingReg->duration = $results->totalSecondsTracked;
-$existingReg->progress = floor($results->registrationCompletionAmount * 100);
-
-if(isset($results->score->scaled))
-{
-    $existingReg->score = $results->score->scaled;
+$existingreg->completion = 0;
+if ($results->registrationCompletion == 'COMPLETED') {
+    $existingreg->completion = 1;
 }
-$DB->update_record('scormengine_registration', $existingReg);
+
+
+if ($results->registrationSuccess == 'PASSED') {
+    $existingreg->success = 1;
+}
+$existingreg->duration = $results->totalSecondsTracked;
+$existingreg->progress = floor($results->registrationCompletionAmount * 100);
+
+if (isset($results->score->scaled)) {
+    $existingreg->score = $results->score->scaled;
+}
+$DB->update_record('scormengine_registration', $existingreg);
 
 $button = "<pre>".json_encode($results, JSON_PRETTY_PRINT)."</pre>";
-$button2 = "<pre>".json_encode($existingReg, JSON_PRETTY_PRINT)."</pre>";
+$button2 = "<pre>".json_encode($existingreg, JSON_PRETTY_PRINT)."</pre>";
 
 $settings = get_config('scormengine');
 
 send_xapi_statements_from_seo(null, $results, $settings->lrs_endpoint, $settings->lrs_username, $settings->lrs_password);
 
-if($results->registrationCompletion == 'COMPLETED' && !$wasAlreadyCompleted)
-{ 
-    console_log($existingReg);
-    $completion=new completion_info($course);
-    $completion->update_state($cm,COMPLETION_COMPLETE );
+if ($results->registrationCompletion == 'COMPLETED' && !$wasalreadycompleted) {
+    console_log($existingreg);
+    $completion = new completion_info($course);
+    $completion->update_state($cm, COMPLETION_COMPLETE );
     send_xapi_statements_from_seo('TERMINATE', $results, $settings->lrs_endpoint, $settings->lrs_username, $settings->lrs_password);
 }
 
-if($results->registrationCompletion == 'COMPLETED')
-{
-    if(isset($results->score->scaled))
-    {
+if ($results->registrationCompletion == 'COMPLETED') {
+    if (isset($results->score->scaled)) {
         $grade = new stdClass();
         $grade->feedback = $results->registrationSuccess;
-        $grade->feedbackformat = 1; // FORMAT_HTML Plain HTML (with some tags stripped)
-        $grade->rawgrade = $results->score->scaled; // A number that is limited to the maxgrade column setting in grade_items table
-        $grade->yourmodule_id = $cm->id; // The unique index id of your module's main DB table
+        $grade->feedbackformat = 1; // FORMAT_HTML Plain HTML (with some tags stripped).
+        $grade->rawgrade = $results->score->scaled; // A number that is limited to the maxgrade column setting in grade_items table.
+        $grade->yourmodule_id = $cm->id; // The unique index id of your module's main DB table.
         $grade->timemodified = time();
         $grade->userid = $USER->id;
         $grade->usermodified = $USER->id;
 
-        if (!function_exists('grade_update')) { //workaround for buggy PHP versions
+        if (!function_exists('grade_update')) { // Workaround for buggy PHP versions
             require_once($CFG->libdir.'/gradelib.php');
         }
 
-        $params = array('itemname'=>$moduleinstance->name, 'idnumber'=> $cm->id);
+        $params = array('itemname' => $moduleinstance->name, 'idnumber' => $cm->id);
             $params['gradetype'] = GRADE_TYPE_VALUE;
             $params['grademax']  = 100;
             $params['grademin']  = 0;

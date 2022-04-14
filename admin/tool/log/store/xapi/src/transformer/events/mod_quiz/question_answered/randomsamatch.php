@@ -20,11 +20,10 @@ defined('MOODLE_INTERNAL') || die();
 
 use src\transformer\utils as utils;
 
-// Question type not supported since multiple questions can be in one question making it hard to 
+// Question type not supported since multiple questions can be in one question making it hard to
 // to have analytics on each question.
 
-function randomsamatch(array $config, \stdClass $event, \stdClass $questionattempt, \stdClass $question)
-{
+function randomsamatch(array $config, \stdClass $event, \stdClass $questionattempt, \stdClass $question) {
     $repo = $config['repo'];
     $user = $repo->read_record_by_id('user', $event->relateduserid);
     $course = $repo->read_record_by_id('course', $event->courseid);
@@ -32,24 +31,23 @@ function randomsamatch(array $config, \stdClass $event, \stdClass $questionattem
     $quiz = $repo->read_record_by_id('quiz', $attempt->quiz);
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
     $lang = utils\get_course_lang($course);
-    
+
     $qsplit = explode(' -> ', $questionattempt->responsesummary);
     $questions = explode(': ', $qsplit[0]);
-    $questions = explode(';', str_replace(array('{','}'), '', $questions[1]));
-    $answers = explode(';', str_replace(array('{','}'), '', $qsplit[1]));
+    $questions = explode(';', str_replace(array('{', '}'), '', $questions[1]));
+    $answers = explode(';', str_replace(array('{', '}'), '', $qsplit[1]));
 
-    
     $responseAnswer = explode(';', $questionattempt->responsesummary);
     $responseParsed = array();
-    
+
     $source = array();
     $target = array();
-    
+
     for ($i = 0; $i < count($responseAnswer); $i++) {
         $answer = explode(' -> ', $responseAnswer[$i]);
         array_push($responseParsed, $answer[1]);
     }
-
+    /*
     // $selections = array_reduce(
     //     explode('; ', $questionattempt->responsesummary),
     //     function ($reduction, $selection) {
@@ -106,7 +104,9 @@ function randomsamatch(array $config, \stdClass $event, \stdClass $questionattem
 
     // $cResponsePattern = substr_replace($responsePattern, '', count($responsePattern) - 3);
     // $formattedResult = substr_replace($selections, '', count($selections) - 3);
-
+    */
+    $cResponsePattern = '';
+    $formattedResult = '';
     $stmnt = [[
         'actor' => utils\get_user($config, $user),
         'verb' => [
@@ -156,10 +156,10 @@ function randomsamatch(array $config, \stdClass $event, \stdClass $questionattem
             ],
         ]
     ]];
-
-    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    // }
-
+    /*
+        if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+        $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+        }
+    */
     return $stmnt;
 }

@@ -51,5 +51,5 @@ if ($ADMIN->fulltree) {
      $settings->add(new admin_setting_configcheckbox('scormengine/restrictToUser', "Restrict To User",
      "Users will only be able to select packages they uploaded themselves", '0'));
 
-     
+
 }

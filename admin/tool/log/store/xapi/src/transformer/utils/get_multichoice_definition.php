@@ -31,7 +31,7 @@ function get_multichoice_definition(array $config, \stdClass $questionattempt, \
     $answers = $repo->read_records('question_answers', [
         'question' => $questionattempt->questionid
     ]);
-    
+
     $choicesids = array_map(function ($item) {
         return array(
             'id' => 'choice'.$item->id,

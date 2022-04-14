@@ -67,7 +67,7 @@ function get_attempt_result(array $config, $attempt, $quiz, $gradeitem, $attempt
         ]
     ];
 
-    if(isset($rawscore)){
+    if (isset($rawscore)) {
         $result['score']['raw'] = floatval($rawscore);
     }
 

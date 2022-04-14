@@ -54,3 +54,4 @@ function discussion_viewed(array $config, \stdClass $event) {
         ]
     ]];
 }
+

@@ -44,11 +44,11 @@ function gapselect(array $config, \stdClass $event, \stdClass $questionattempt, 
     }, $answers);
 
     $responesPattern = array_reduce(
-        $selections, 
+        $selections,
         function ($reduction, $selection) use($choicesids) {
-            foreach($choicesids as $choice) {
+            foreach ($choicesids as $choice) {
                 $v = utils\get_value($choice, 'description');
-                if(strtoupper($v) === strtoupper($selection)) {                           
+                if (strtoupper($v) === strtoupper($selection)) {
                     $selectionkey = utils\get_value($choice, 'id');
                 }
             }
@@ -95,10 +95,10 @@ function gapselect(array $config, \stdClass $event, \stdClass $questionattempt, 
             ],
         ]
     ]];
-
-    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    // }
-
+    /*
+        if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+            $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+        }
+    */
     return $stmnt;
 }

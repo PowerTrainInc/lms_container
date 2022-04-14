@@ -20,8 +20,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use src\transformer\utils as utils;
 
-function ddwtos(array $config, \stdClass $event, \stdClass $questionattempt, \stdClass $question)
-{
+function ddwtos(array $config, \stdClass $event, \stdClass $questionattempt, \stdClass $question) {
     global $DB;
 
     $repo = $config['repo'];
@@ -29,7 +28,7 @@ function ddwtos(array $config, \stdClass $event, \stdClass $questionattempt, \st
     $course = $repo->read_record_by_id('course', $event->courseid);
     $attempt = $repo->read_record('quiz_attempts', ['uniqueid' => $questionattempt->questionusageid]);
     $quiz = $repo->read_record_by_id('quiz', $attempt->quiz);
-    $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
+    // $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
     $lang = utils\get_course_lang($course);
 
     $formattedRightAnswer = explode('} {', rtrim(ltrim(utils\get_string_html_removed($questionattempt->rightanswer), '{'), '}'));
@@ -104,19 +103,18 @@ function ddwtos(array $config, \stdClass $event, \stdClass $questionattempt, \st
             $choices[] = [
                 'id' => $i < 10 ? 'choice0' . $i : 'choice' . $i,
                 'description' => [
-                    $lang => $update[$i-1]
+                    $lang => $update[$i - 1]
                 ]
             ];
 
-            if ($update[$i-1] === $formattedRightAnswer[0]) {
+            if ($update[$i - 1] === $formattedRightAnswer[0]) {
                 $correctResponsesPattern = $i < 10 ? 'choice0' . $i : 'choice' . $i;
             }
-            if ($userAnswer === $update[$i-1]) {
+            if ($userAnswer === $update[$i - 1]) {
                 $responsePattern = $i < 10 ? 'choice0' . $i : 'choice' . $i;
             }
         }
     }
-
 
     $correctResponsesPattern = utils\str_replace_last('[,]', '', $correctResponsesPattern);
     $formattedResult = utils\str_replace_last('[,]', '', $responsePattern);
@@ -168,7 +166,7 @@ function ddwtos(array $config, \stdClass $event, \stdClass $questionattempt, \st
             ],
         ]
     ]];
-    
+
     if ($interactionType === 'matching') {
         $stmnt[0]['object']['definition']['source'] = array_values($source);
         $stmnt[0]['object']['definition']['target'] = array_values($target);

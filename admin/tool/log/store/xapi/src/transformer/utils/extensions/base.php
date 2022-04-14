@@ -21,8 +21,8 @@ function base(array $config, \stdClass $event, $course) {
     return array_merge(
         [],
         [
-            'https://w3id.org/xapi/netc/extensions/school-center' => "Naval Training Service Command (NTSC)",
-            'https://w3id.org/xapi/netc/extensions/launch-location' => "Ashore"
+            // 'https://w3id.org/xapi/netc/extensions/school-center' => "Naval Training Service Command (NTSC)",
+            // 'https://w3id.org/xapi/netc/extensions/launch-location' => "Ashore"
         ]
     );
 }

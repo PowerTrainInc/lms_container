@@ -62,10 +62,10 @@ class store extends php_obj implements log_writer {
         }
 
         // if the event is updating the completion state, and the new state is 'incomplete', ignore it
-        if ($event->eventname == '\core\event\course_module_completion_updated' && 
+        if ($event->eventname == '\core\event\course_module_completion_updated' &&
             $event->other['completionstate'] === 0) {
             return true;
-        } 
+        }
 
         $enabledevents = explode(',', $this->get_config('routes', ''));
         $isdisabledevent = !in_array($event->eventname, $enabledevents);

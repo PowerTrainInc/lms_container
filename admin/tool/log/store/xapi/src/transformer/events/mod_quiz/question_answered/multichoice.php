@@ -43,11 +43,11 @@ function multichoice(array $config, \stdClass $event, \stdClass $questionattempt
     }, $answers);
 
     $responesPattern = array_reduce(
-        $responsesummary, 
+        $responsesummary,
         function ($reduction, $selection) use($choicesids) {
-            foreach($choicesids as $choice) {
+            foreach ($choicesids as $choice) {
                 $v = utils\get_value($choice, 'description');
-                if(strtoupper($v) === strtoupper($selection)) {                           
+                if (strtoupper($v) === strtoupper($selection)) {
                     $selectionkey = utils\get_value($choice, 'id');
                 }
             }
@@ -73,7 +73,7 @@ function multichoice(array $config, \stdClass $event, \stdClass $questionattempt
         'result' => [
             'response' => $responesPattern,
             'success' => $questionattempt->rightanswer == $questionattempt->responsesummary,
-            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false            
+            'completion' => ($questionattempt->responsesummary !== null || $questionattempt->responsesummary !== '') ? true : false
         ],
         'context' => [
             'platform' => $config['source_name'],
@@ -94,10 +94,10 @@ function multichoice(array $config, \stdClass $event, \stdClass $questionattempt
             ],
         ]
     ]];
-
-    // if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
-    //     $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
-    // }
-
+    /*
+        if (isset($questionattempt->responsesummary) && $questionattempt->responsesummary != "") {
+        $stmnt[0]['result']['success'] = $questionattempt->rightanswer === $questionattempt->responsesummary ? true : false;
+        }
+    */
     return $stmnt;
 }

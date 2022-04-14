@@ -55,7 +55,7 @@ function course_module(array $config, $course, $cmid, $xapitype) {
                 ],
             ],
         ];
-    }else{
+    } else {
         $object = [
             'id' => $coursemoduleurl,
             'definition' => [

@@ -1,41 +1,56 @@
-<?php namespace xapi;
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace xapi;
 class StatementBuilder {
-    const actor_homepage = 'https://edipi.navy.mil';
-    const scorm_context_category = [
+    const ACTOR_HOMEPAGE = 'https://edipi.navy.mil';
+    const SCORM_CONTEXT_CATEGORY = [
         'id' => 'https://w3id.org/xapi/scorm',
         'definition' => [
             'type' => 'http://adlnet.gov/expapi/activities/profile'
         ]
     ];
-    const netc_context_category = [
+    const NETC_CONTEXT_CATEGORY = [
         'id' => 'https://w3id.org/xapi/netc/v1.0',
         'definition' => [
             'type' => 'http://adlnet.gov/expapi/activities/profile'
         ]
     ];
-    const elearning_context_category = [
+    const ELEARNING_CONTEXT_CATEGORY = [
         'id' => 'https://w3id.org/xapi/netc-e-learning/v1.0',
         'definition' => [
             'type' => 'http://adlnet.gov/expapi/activities/profile'
         ]
     ];
-    const assessment_context_category = [
+    const ASSESSMENT_CONTEXT_CATEGORY = [
         'id' => 'https://w3id.org/xapi/netc-assessment/v1.0',
         'definition' => [
             'type' => 'http://adlnet.gov/expapi/activities/profile'
         ]
     ];
-    const scorm_platform = 'SCORM Engine 20.1';
-    const activity_id_prefix = 'https://navy.mil/netc/xapi/activities';
+    const SCORM_PLATFORM = 'SCORM Engine 20.1';
+    const ACTIVITY_ID_PREFIX = 'https://navy.mil/netc/xapi/activities';
 
- 
-    public function get_iso8601_duration($seconds_string) {
-        return "PT{$seconds_string}S";
+
+    public function get_iso8601_duration($secondsstring) {
+        return "PT{$secondsstring}S";
     }
 
-    public function get_duration_seconds($time_tracked) {
-        sscanf($time_tracked, "%d:%d:%d.%d", $hours, $minutes, $seconds, $milliseconds);
+    public function get_duration_seconds($timetracked) {
+        sscanf($timetracked, "%d:%d:%d.%d", $hours, $minutes, $seconds, $milliseconds);
         return $hours * 3600 + $minutes * 60 + $seconds + $milliseconds / 100;
     }
 
@@ -43,26 +58,26 @@ class StatementBuilder {
         return [
             'name' => "{$learner->firstName} {$learner->lastName}",
             'account' => [
-                'homePage' => self::actor_homepage,
+                'homePage' => self::ACTOR_HOMEPAGE,
                 'name' => "{$learner->id}",
             ],
             'objectType' => 'Agent'
         ];
     }
 
-    public function build_course_verb($verb_id, $verb_display) {
+    public function build_course_verb($verbid, $verbdisplay) {
         return [
-            'id' => $verb_id,
+            'id' => $verbid,
             'display' => [
-                'en' => $verb_display
+                'en' => $verbdisplay
             ]
         ];
     }
 
-    public function build_course_activity_id($course_id) {
-        return self::activity_id_prefix."/courses/{$course_id}";
+    public function build_course_activity_id($courseid) {
+        return self::ACTIVITY_ID_PREFIX."/courses/{$courseid}";
     }
-    
+
     public function build_course_object($course) {
         return [
             'id' => $this->build_course_activity_id($course->id),
@@ -74,17 +89,17 @@ class StatementBuilder {
             ]
         ];
     }
-    
-    public function build_course_context($registration_id) {
+
+    public function build_course_context($registrationid) {
         return [
             'contextActivities' => [
                 'category' => [
-                    self::netc_context_category,
-                    self::elearning_context_category,
+                    self::NETC_CONTEXT_CATEGORY,
+                    self::ELEARNING_CONTEXT_CATEGORY,
                 ]
             ],
-            'registration' => $registration_id,
-            'platform' => self::scorm_platform,
+            'registration' => $registrationid,
+            'platform' => self::SCORM_PLATFORM,
             'extensions' => [
                 'https://w3id.org/xapi/netc/extensions/launch-location' => 'Ashore',
                 'https://w3id.org/xapi/netc/extensions/school-center' => "Center for Naval Aviation Technical Training (CNATT)",
@@ -92,27 +107,27 @@ class StatementBuilder {
             ]
         ];
     }
-    
+
     public function build_course_result($seo) {
         $result = [
             'duration' => $this->get_iso8601_duration($seo->totalSecondsTracked)
         ];
-    
+
         if ($seo->registrationSuccess !== 'UNKNOWN') {
             $result['success'] = $seo->registrationSuccess === 'FAILED' ? false : true;
         }
-    
+
         if ($seo->registrationCompletion !== 'UNKNOWN') {
             $result['completion'] = $seo->registrationCompletion === 'INCOMPLETE' ? false : true;
         }
-    
+
         if (isset($seo->score->scaled)) {
-            $result['score']['scaled'] = intval($seo->score->scaled)/100;
+            $result['score']['scaled'] = intval($seo->score->scaled) / 100;
         }
-    
+
         return $result;
     }
-    
+
     public function build_initialize_statement($seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
@@ -122,7 +137,7 @@ class StatementBuilder {
             'timestamp' => date('c', strtotime($seo->lastAccessDate))
         ];
     }
-    
+
     public function build_terminate_statement($seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
@@ -134,75 +149,75 @@ class StatementBuilder {
         ];
     }
 
-    public function build_lesson_activity_id($lesson_id) {
-        return self::activity_id_prefix."/lessons/{$lesson_id}";
+    public function build_lesson_activity_id($lessonid) {
+        return self::ACTIVITY_ID_PREFIX."/lessons/{$lessonid}";
     }
 
-    public function build_lesson_initialize_statement($lesson, $registration_id, $seo) {
+    public function build_lesson_initialize_statement($lesson, $registrationid, $seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
             'verb' => $this->build_course_verb('http://adlnet.gov/expapi/verbs/initialized', 'initialized'),
             'object' => $this->build_lesson_object(
                 $this->build_lesson_activity_id($lesson->id), $lesson->title),
-            'context' => $this->build_lesson_context($registration_id, $seo->course),
+            'context' => $this->build_lesson_context($registrationid, $seo->course),
 
         ];
     }
 
-    public function build_lesson_terminate_statement($lesson_state, $lesson_activity_id, $registration_id, $seo) {
+    public function build_lesson_terminate_statement($lessonstate, $lessonactivityid, $registrationid, $seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
             'verb' => $this->build_course_verb('http://adlnet.gov/expapi/verbs/terminated', 'terminated'),
-            'object' => $this->build_lesson_object($lesson_activity_id, $lesson_state['title']),
-            'context' => $this->build_lesson_context($registration_id, $seo->course),
-            'result' => $this->build_lesson_result($lesson_state),
+            'object' => $this->build_lesson_object($lessonactivityid, $lessonstate['title']),
+            'context' => $this->build_lesson_context($registrationid, $seo->course),
+            'result' => $this->build_lesson_result($lessonstate),
         ];
     }
 
-    public function build_lesson_result($lesson_state) {
+    public function build_lesson_result($lessonstate) {
         $result = [
-            'duration' => $lesson_state['total_time'],
+            'duration' => $lessonstate['total_time'],
         ];
-        
-        if (array_key_exists('success', $lesson_state['lesson_states'])) {
-            $result['success'] = $lesson_state['lesson_states']['success'] === 'FAILED' ? false : true;
+
+        if (array_key_exists('success', $lessonstate['lesson_states'])) {
+            $result['success'] = $lessonstate['lesson_states']['success'] === 'FAILED' ? false : true;
         }
 
-        if (array_key_exists('completed', $lesson_state['lesson_states'])) {
-            $result['completion'] = $lesson_state['lesson_states']['completed'];
+        if (array_key_exists('completed', $lessonstate['lesson_states'])) {
+            $result['completion'] = $lessonstate['lesson_states']['completed'];
         }
 
-        if (array_key_exists('score', $lesson_state['lesson_states'])) {
-            $result['score'] = [ 'scaled' => $lesson_state['lesson_states']['score'] ];
+        if (array_key_exists('score', $lessonstate['lesson_states'])) {
+            $result['score'] = [ 'scaled' => $lessonstate['lesson_states']['score'] ];
         }
-    
+
         return $result;
     }
 
-    public function build_lesson_object($lesson_activity_id, $lesson_title) {
+    public function build_lesson_object($lessonactivityid, $lessontitle) {
         return [
-            'id' => $lesson_activity_id,
+            'id' => $lessonactivityid,
             'definition' => [
                 'name' => [
-                    'en' => $lesson_title
+                    'en' => $lessontitle
                 ],
                 'type' => 'http://adlnet.gov/expapi/activities/lesson'
             ]
         ];
     }
 
-    public function build_lesson_context($registration_id, $course) {
+    public function build_lesson_context($registrationid, $course) {
         return [
             'contextActivities' => [
                 'grouping' => [ $this->build_course_object($course) ],
                 'category' => [
-                    self::scorm_context_category,
-                    self::netc_context_category,
-                    self::elearning_context_category,
+                    self::SCORM_CONTEXT_CATEGORY,
+                    self::NETC_CONTEXT_CATEGORY,
+                    self::ELEARNING_CONTEXT_CATEGORY,
                 ]
             ],
-            'registration' => $registration_id,
-            'platform' => self::scorm_platform,
+            'registration' => $registrationid,
+            'platform' => self::SCORM_PLATFORM,
             'extensions' => [
                 'https://w3id.org/xapi/netc/extensions/launch-location' => 'Ashore',
                 'https://w3id.org/xapi/netc/extensions/school-center' => "Center for Naval Aviation Technical Training (CNATT)",
@@ -211,129 +226,140 @@ class StatementBuilder {
         ];
     }
 
-    public function build_lesson_resumed_statement($lesson, $registration_id, $seo) {
+    public function build_lesson_resumed_statement($lesson, $registrationid, $seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
             'verb' => $this->build_course_verb('http://adlnet.gov/expapi/verbs/resumed', 'resumed'),
             'object' => $this->build_lesson_object($this->build_lesson_activity_id($lesson->id), $lesson->title),
-            'context' => $this->build_lesson_context($registration_id, $seo->course),
+            'context' => $this->build_lesson_context($registrationid, $seo->course),
 
         ];
     }
 
-    public function build_lesson_suspended_statement($lesson, $registration_id, $seo) {
+    public function build_lesson_suspended_statement($lesson, $registrationid, $seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
             'verb' => $this->build_course_verb('http://adlnet.gov/expapi/verbs/suspended', 'suspended'),
             'object' => $this->build_lesson_object($this->build_lesson_activity_id($lesson->id), $lesson->title),
-            'context' => $this->build_lesson_context($registration_id, $seo->course),
+            'context' => $this->build_lesson_context($registrationid, $seo->course),
         ];
     }
 
-    public function build_lesson_scored_statement($lesson, $score_scaled, $registration_id, $seo) {
+    public function build_lesson_scored_statement($lesson, $scorescaled, $registrationid, $seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
             'verb' => $this->build_course_verb('http://adlnet.gov/expapi/verbs/scored', 'scored'),
             'object' => $this->build_lesson_object($this->build_lesson_activity_id($lesson->id), $lesson->title),
-            'context' => $this->build_lesson_context($registration_id, $seo->course),
+            'context' => $this->build_lesson_context($registrationid, $seo->course),
             'result' => [
                 'score' => [
-                    'scaled' => $score_scaled,
+                    'scaled' => $scorescaled,
                 ],
             ],
 
         ];
     }
 
-    public function build_lesson_passed_statement($lesson, $registration_id, $seo) {
+    public function build_lesson_passed_statement($lesson, $registrationid, $seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
             'verb' => $this->build_course_verb('http://adlnet.gov/expapi/verbs/passed', 'passed'),
             'object' => $this->build_lesson_object($this->build_lesson_activity_id($lesson->id), $lesson->title),
-            'context' => $this->build_lesson_context($registration_id, $seo->course),
+            'context' => $this->build_lesson_context($registrationid, $seo->course),
         ];
     }
 
-    public function build_lesson_failed_statement($lesson, $registration_id, $seo) {
+    public function build_lesson_failed_statement($lesson, $registrationid, $seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
             'verb' => $this->build_course_verb('http://adlnet.gov/expapi/verbs/failed', 'failed'),
             'object' => $this->build_lesson_object($this->build_lesson_activity_id($lesson->id), $lesson->title),
-            'context' => $this->build_lesson_context($registration_id, $seo->course),
+            'context' => $this->build_lesson_context($registrationid, $seo->course),
         ];
     }
 
-    public function build_lesson_completed_statement($lesson, $registration_id, $seo) {
+    public function build_lesson_completed_statement($lesson, $registrationid, $seo) {
         return [
             'actor' => $this->build_course_actor($seo->learner),
             'verb' => $this->build_course_verb('http://adlnet.gov/expapi/verbs/completed', 'completed'),
             'object' => $this->build_lesson_object($this->build_lesson_activity_id($lesson->id), $lesson->title),
-            'context' => $this->build_lesson_context($registration_id, $seo->course),
+            'context' => $this->build_lesson_context($registrationid, $seo->course),
         ];
     }
 
-    function build_interaction_activity_id($interaction_id) {
-        return self::activity_id_prefix."/cmi.interactions/{$interaction_id}";
+    public function build_interaction_activity_id($interactionid) {
+        return self::ACTIVITY_ID_PREFIX."/cmi.interactions/{$interactionid}";
     }
 
-    function build_assessment_activity_id($assessment_id) {
-        return self::activity_id_prefix."/assessments/{$assessment_id}";
+    public function build_assessment_activity_id($assessmentid) {
+        return self::ACTIVITY_ID_PREFIX."/assessments/{$assessmentid}";
     }
 
-    function get_interaction_type($interaction_type) {
-        if (preg_match('/choice/i', $interaction_type)) return 'choice';
-        elseif (preg_match('/true|false/i', $interaction_type)) return 'true-false';
-        elseif (preg_match('/long|fill|in/i', $interaction_type)) return 'long-fill-in';
-        elseif (preg_match('/fill|in/i', $interaction_type)) return 'fill-in';
-        elseif (preg_match('/matching/i', $interaction_type)) return 'matching';
-        elseif (preg_match('/performance/i', $interaction_type)) return 'performance';
-        elseif (preg_match('/sequencing/i', $interaction_type)) return 'sequencing';
-        elseif (preg_match('/like|rt/i', $interaction_type)) return 'likert';
-        elseif (preg_match('/numeric/i', $interaction_type)) return 'numeric';
-        else return 'other';
+    public function get_interaction_type($interactiontype) {
+        if (preg_match('/choice/i', $interactiontype)) {
+            return 'choice';
+        } else if (preg_match('/true|false/i', $interactiontype)) {
+            return 'true-false';
+        } else if (preg_match('/long|fill|in/i', $interactiontype)) {
+            return 'long-fill-in';
+        } else if (preg_match('/fill|in/i', $interactiontype)) {
+            return 'fill-in';
+        } else if (preg_match('/matching/i', $interactiontype)) {
+            return 'matching';
+        } else if (preg_match('/performance/i', $interactiontype)) {
+            return 'performance';
+        } else if (preg_match('/sequencing/i', $interactiontype)) {
+            return 'sequencing';
+        } else if (preg_match('/like|rt/i', $interactiontype)) {
+            return 'likert';
+        } else if (preg_match('/numeric/i', $interactiontype)) {
+            return 'numeric';
+        } else {
+            return 'other';
+        }
     }
 
-    function build_interaction_object($interaction_activity_id, $interaction_description, $interaction_type) {
+    public function build_interaction_object($interactionactivityid, $interactiondescription, $interactiontype) {
         return [
-            'id' => $interaction_activity_id,
+            'id' => $interactionactivityid,
             'definition' => [
                 'description' => [
-                    'en' => $interaction_description,
+                    'en' => $interactiondescription,
                 ],
                 'type' => 'http://adlnet.gov/expapi/activities/cmi.interaction',
-                'interactionType' => $this->get_interaction_type($interaction_type),
+                'interactionType' => $this->get_interaction_type($interactiontype),
             ],
         ];
     }
 
-    function build_assessment_object($assessment_activity_id) {
+    public function build_assessment_object($assessmentactivityid) {
         return [
-            'id' => $assessment_activity_id,
+            'id' => $assessmentactivityid,
             'definition' => [
                 'type' => 'http://adlnet.gov/expapi/activities/assessment'
             ],
         ];
     }
 
-    function build_interaction_context($assessment_id, $lesson_registration_id, $lesson, $course) {
+    public function build_interaction_context($assessmentid, $lessonregistrationid, $lesson, $course) {
         return [
             'contextActivities' => [
                 'parent' => [
-                    $this->build_assessment_object($this->build_assessment_activity_id($assessment_id)),
+                    $this->build_assessment_object($this->build_assessment_activity_id($assessmentid)),
                 ],
                 'grouping' => [
                     $this->build_course_object($course),
                     $this->build_lesson_object($this->build_lesson_activity_id($lesson->id), $lesson->title)
                 ],
                 'category' => [
-                    self::scorm_context_category,
-                    self::netc_context_category,
-                    self::elearning_context_category,
-                    self::assessment_context_category,
+                    self::SCORM_CONTEXT_CATEGORY,
+                    self::NETC_CONTEXT_CATEGORY,
+                    self::ELEARNING_CONTEXT_CATEGORY,
+                    self::ASSESSMENT_CONTEXT_CATEGORY,
                 ]
             ],
-            'registration' => $lesson_registration_id,
-            'platform' => self::scorm_platform,
+            'registration' => $lessonregistrationid,
+            'platform' => self::SCORM_PLATFORM,
             'extensions' => [
                 'https://w3id.org/xapi/netc/extensions/launch-location' => 'Ashore',
                 'https://w3id.org/xapi/netc/extensions/school-center' => "Center for Naval Aviation Technical Training (CNATT)",
@@ -342,14 +368,14 @@ class StatementBuilder {
         ];
     }
 
-    public function build_interaction_responded_statement($interaction, $lesson, $lesson_registration_id, $learner, $course, $assessment_id) {
+    public function build_interaction_responded_statement($interaction, $lesson, $lessonregistrationid, $learner, $course, $assessmentid) {
         $statement = [
-            'actor' =>  $this->build_course_actor($learner),
-            'verb' =>  $this->build_course_verb('http://adlnet.gov/expapi/verbs/responded', 'responded'),
+            'actor' => $this->build_course_actor($learner),
+            'verb' => $this->build_course_verb('http://adlnet.gov/expapi/verbs/responded', 'responded'),
             'object' => $this->build_interaction_object(
                 $this->build_interaction_activity_id($interaction->id), $interaction->description, $interaction->type),
             'context' => $this->build_interaction_context(
-                $assessment_id, $lesson_registration_id, $lesson, $course),
+                $assessmentid, $lessonregistrationid, $lesson, $course),
         ];
 
         if ($interaction->learnerResponse !== '') {
@@ -363,4 +389,3 @@ class StatementBuilder {
     }
 }
 
-?>

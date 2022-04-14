@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 
 require_once('classes/StatementBuilder.php');
 require_once('classes/LrsApi.php');
@@ -7,442 +22,442 @@ require_once('lib.php');
 
 function send_xapi_statements_from_seo($type, $seo, $url, $user, $password) {
     $requests = new xapi\Requests();
-    $lrs_api = new xapi\LrsApi($requests, $url, $user, $password);
+    $lrsapi = new xapi\LrsApi($requests, $url, $user, $password);
 
-    $statements = get_xapi_statements_from_seo($type, $seo, $lrs_api);
+    $statements = get_xapi_statements_from_seo($type, $seo, $lrsapi);
     if ($statements && count($statements) > 0) {
-        $lrs_api->statements()->create_resource($statements)->with_no_params();
+        $lrsapi->statements()->create_resource($statements)->with_no_params();
     }
 }
 
-function get_xapi_statements_from_seo($type, $seo, $lrs_api) {
+function get_xapi_statements_from_seo($type, $seo, $lrsapi) {
     $statements = [];
-    $activity_exists = true;
-    $attempt_exists = true; 
-    $statement_builder = new xapi\StatementBuilder();
-    $course_activity_state_id = 'https://w3id.org/xapi/netc/course/activity-state';
-    $course_attempt_state_id = 'https://w3id.org/xapi/netc/course/attempt-state';
+    $activityexists = true;
+    $attemptexists = true;
+    $statementbuilder = new xapi\StatementBuilder();
+    $courseactivitystateid = 'https://w3id.org/xapi/netc/course/activity-state';
+    $courseattemptstateid = 'https://w3id.org/xapi/netc/course/attempt-state';
 
-    $course_state_params = [
-        'activityId' => $statement_builder->build_course_activity_id($seo->course->id),
+    $coursestateparams = [
+        'activityId' => $statementbuilder->build_course_activity_id($seo->course->id),
         'agent' => [
-            'account' => $statement_builder->build_course_actor($seo->learner)['account'],
+            'account' => $statementbuilder->build_course_actor($seo->learner)['account'],
         ],
-        'stateId' => $course_activity_state_id,
+        'stateId' => $courseactivitystateid,
     ];
 
-    // get course activity lrs or make new course activity.
-    $course_activity_state = $lrs_api->activity_states()->get_resource()->with_query_params($course_state_params);
-    if (!$course_activity_state) {
-        $course_activity_state = [ 'attempts' => [], 'seo' => $seo ];
-        $activity_exists = false;
+    // Get course activity lrs or make new course activity.
+    $courseactivitystate = $lrsapi->activity_states()->get_resource()->with_query_params($coursestateparams);
+    if (!$courseactivitystate) {
+        $courseactivitystate = [ 'attempts' => [], 'seo' => $seo ];
+        $activityexists = false;
     }
 
-
-    // get course attempt or make new course attempt.
-    $course_state_params['stateId'] = $course_attempt_state_id;
-    $course_state_params['registration'] = $seo->id;
-    $course_attempt_state = $lrs_api->activity_states()->get_resource()->with_query_params($course_state_params);
-    if (!$course_attempt_state) {
-        $course_attempt_state = [ 'lessons' => [] ];
-        $attempt_exists = false;
+    // Get course attempt or make new course attempt.
+    $coursestateparams['stateId'] = $courseattemptstateid;
+    $coursestateparams['registration'] = $seo->id;
+    $courseattemptstate = $lrsapi->activity_states()->get_resource()->with_query_params($coursestateparams);
+    if (!$courseattemptstate) {
+        $courseattemptstate = [ 'lessons' => [] ];
+        $attemptexists = false;
     }
 
     if ($type === 'INITIALIZE') {
-        $statements[] = $statement_builder->build_initialize_statement($seo);
+        $statements[] = $statementbuilder->build_initialize_statement($seo);
 
-        // add this course attempt to course activity.
-        $course_activity_state['attempts'][] = $seo->id;
+        // Add this course attempt to course activity.
+        $courseactivitystate['attempts'][] = $seo->id;
     }
 
     if ($type === 'TERMINATE') {
-        // terminate all the lessons in this course attempt (add lesson terminate statements).
-        $statements = terminate_all_lessons($course_attempt_state['lessons'], $seo, $lrs_api);
+        // Terminate all the lessons in this course attempt (add lesson terminate statements).
+        $statements = terminate_all_lessons($courseattemptstate['lessons'], $seo, $lrsapi);
 
-        $statements[] = $statement_builder->build_terminate_statement($seo);
+        $statements[] = $statementbuilder->build_terminate_statement($seo);
     }
 
     if (!$type) {
-        // process lessons.
+        // Process lessons.
         if ($seo->activityDetails->attempts !== 0 && isset($seo->activityDetails->children)) {
-            $course_state = process_lessons(
+            $coursestate = process_lessons(
                 $seo->activityDetails->children,
-                [ 'statements' => $statements, 'lessons' => $course_attempt_state['lessons'] ],
-                $lrs_api, $seo);
-            // array_merge($statements, $course_state['statements']);
-            $statements = $course_state['statements'];
-            $course_attempt_state['lessons'] = $course_state['lessons'];
+                [ 'statements' => $statements, 'lessons' => $courseattemptstate['lessons'] ],
+                $lrsapi, $seo);
+
+            $statements = $coursestate['statements'];
+            $courseattemptstate['lessons'] = $coursestate['lessons'];
         }
     }
 
-    // create new course attempt
-    $course_state_params['stateId'] = $course_attempt_state_id;
-    $course_state_params['registration'] = $seo->id;
+    // Create new course attempt.
+    $coursestateparams['stateId'] = $courseattemptstateid;
+    $coursestateparams['registration'] = $seo->id;
 
-    if ($attempt_exists) {
-        $lrs_api->activity_states()
-            ->update_resource($course_attempt_state)->with_query_params($course_state_params);
+    if ($attemptexists) {
+        $lrsapi->activity_states()
+            ->update_resource($courseattemptstate)->with_query_params($coursestateparams);
     } else {
-        $lrs_api->activity_states()
-            ->create_resource($course_attempt_state)->with_query_params($course_state_params);
+        $lrsapi->activity_states()
+            ->create_resource($courseattemptstate)->with_query_params($coursestateparams);
     }
 
-    // add this course activity to course and update or create.
-    $course_state_params['stateId'] = $course_activity_state_id;
-    unset($course_state_params['registration']);
+    // Add this course activity to course and update or create.
+    $coursestateparams['stateId'] = $courseactivitystateid;
+    unset($coursestateparams['registration']);
 
-    if ($activity_exists) {
-        // add and update
-        $lrs_api->activity_states()
-            ->update_resource($course_activity_state)->with_query_params($course_state_params);
+    if ($activityexists) {
+        // Add and update.
+        $lrsapi->activity_states()
+            ->update_resource($courseactivitystate)->with_query_params($coursestateparams);
     } else {
-        // create new activity state
-        $lrs_api->activity_states()
-            ->create_resource($course_activity_state)->with_query_params($course_state_params);
+        // Create new activity state.
+        $lrsapi->activity_states()
+            ->create_resource($courseactivitystate)->with_query_params($coursestateparams);
     }
 
     return $statements;
 }
 
-function terminate_all_lessons($lessons, $seo, $lrs_api) {
-    $statement_builder = new xapi\StatementBuilder();
+function terminate_all_lessons($lessons, $seo, $lrsapi) {
+    $statementbuilder = new xapi\StatementBuilder();
 
-    $state_params = [
+    $stateparams = [
         'agent' => [
-            'account' => $statement_builder->build_course_actor($seo->learner)['account'],
+            'account' => $statementbuilder->build_course_actor($seo->learner)['account'],
         ],
         'stateId' => 'https://w3id.org/xapi/scorm/attempt-state',
     ];
 
     $statements = [];
 
-    foreach($lessons as $activity_id => $registration_ids) {
-        foreach($registration_ids as $registration_id) {
-            $state_params['activityId'] = $activity_id;
-            $state_params['registration'] = $registration_id;
+    foreach ($lessons as $activityid => $registrationids) {
+        foreach ($registrationids as $registrationid) {
+            $stateparams['activityId'] = $activityid;
+            $stateparams['registration'] = $registrationid;
 
-            // get the lesson attempt state
-            $lesson_state = $lrs_api->activity_states()->get_resource()->with_query_params($state_params);
-            if (!$lesson_state) continue;
+            // Get the lesson attempt state
+            $lessonstate = $lrsapi->activity_states()->get_resource()->with_query_params($stateparams);
+            if (!$lessonstate) {
+                continue;
+            }
 
-            //if already terminated, continue
-            if (array_key_exists('terminated', $lesson_state['lesson_states']) &&
-                    $lesson_state['lesson_states']['terminated'] === true
+            // If already terminated, continue.
+            if (array_key_exists('terminated', $lessonstate['lesson_states']) &&
+                    $lessonstate['lesson_states']['terminated'] === true
             ) {
                 continue;
             }
 
-            // else update the lesson attempt
-            $lesson_state['lesson_states']['terminated'] = true;
-            $lrs_api->activity_states()->update_resource($lesson_state)->with_query_params($state_params);
+            // Else update the lesson attempt.
+            $lessonstate['lesson_states']['terminated'] = true;
+            $lrsapi->activity_states()->update_resource($lessonstate)->with_query_params($stateparams);
 
-            // add the terminate statement
-            $statements[] = $statement_builder->build_lesson_terminate_statement(
-                $lesson_state, $activity_id, $registration_id, $seo);
+            // Add the terminate statement
+            $statements[] = $statementbuilder->build_lesson_terminate_statement(
+                $lessonstate, $activityid, $registrationid, $seo);
         }
     }
 
     return $statements;
 }
 
-function process_lessons($lessons, $course_state, $lrs_api, $seo) {
-    $current_state = $course_state;
+function process_lessons($lessons, $coursestate, $lrsapi, $seo) {
+    $currentstate = $coursestate;
 
     foreach ($lessons as $lesson) {
-        if ($lesson->attempts === 0) continue;
+        if ($lesson->attempts === 0) {
+            continue;
+        }
 
         if (isset($lesson->children) && count($lesson->children) > 0) {
-            $current_state = process_lessons($lesson->children, $current_state, $lrs_api, $seo);
+            $currentstate = process_lessons($lesson->children, $currentstate, $lrsapi, $seo);
         } else {
-            $current_state = process_lesson($lesson, $current_state, $lrs_api, $seo);
+            $currentstate = process_lesson($lesson, $currentstate, $lrsapi, $seo);
         }
     }
 
-    // return [ 'statements' => [<array>], 'attempts' => [<string>] ]
-    return $current_state;
+    return $currentstate;
 }
 
-function get_interaction_attempt_states($lesson, $lesson_registration_id, $attempt_state, $seo) {
+function get_interaction_attempt_states($lesson, $lessonregistrationid, $attemptstate, $seo) {
     if (!isset($lesson->runtime->runtimeInteractions) || count($lesson->runtime->runtimeInteractions) === 0) {
         return [];
     }
 
     $sb = new xapi\StatementBuilder();
-    
-    $assessment_id = uuid();
-    $assessment = isset($attempt_state['assessment']) ? $attempt_state['assessment'] : [
-        'id' => $sb->build_assessment_activity_id($assessment_id),
+
+    $assessmentid = uuid();
+    $assessment = isset($attemptstate['assessment']) ? $attemptstate['assessment'] : [
+        'id' => $sb->build_assessment_activity_id($assessmentid),
         'interactions' => [],
     ];
     $statements = [];
 
     foreach ($lesson->runtime->runtimeInteractions as $interaction) {
-        $interaction_id = $sb->build_interaction_activity_id($interaction->id);
-        if (!in_array($interaction_id, $assessment['interactions'])) {
-            $assessment['interactions'][] = $interaction_id;
+        $interactionid = $sb->build_interaction_activity_id($interaction->id);
+        if (!in_array($interactionid, $assessment['interactions'])) {
+            $assessment['interactions'][] = $interactionid;
             $statements[] = $sb->build_interaction_responded_statement(
-                $interaction, $lesson, $lesson_registration_id, $seo->learner, $seo->course, $assessment_id);
+                $interaction, $lesson, $lessonregistrationid, $seo->learner, $seo->course, $assessmentid);
         }
     }
 
     return [ 'assessment' => $assessment, 'statements' => $statements ];
 }
 
-function process_lesson($lesson, $course_state, $lrs_api, $seo) {
-    $current_state = $course_state;
-    $statement_builder = new xapi\StatementBuilder();
-    $activity_state_id = 'https://w3id.org/xapi/scorm/activity-state';
-    $attempt_state_id = 'https://w3id.org/xapi/scorm/attempt-state';
-    $registration_id = uuid();
-    $is_new_attempt = true;
-    $activity_exists = true;
-    $attempt_diff = 0;
-    $lesson_activity_id = $statement_builder->build_lesson_activity_id($lesson->id);
+function process_lesson($lesson, $coursestate, $lrsapi, $seo) {
+    $currentstate = $coursestate;
+    $statementbuilder = new xapi\StatementBuilder();
+    $activitystateid = 'https://w3id.org/xapi/scorm/activity-state';
+    $attemptstateid = 'https://w3id.org/xapi/scorm/attempt-state';
+    $registrationid = uuid();
+    $isnewattempt = true;
+    $activityexists = true;
+    $attemptdiff = 0;
+    $lessonactivityid = $statementbuilder->build_lesson_activity_id($lesson->id);
 
-    $state_params = [
-        'activityId' => $lesson_activity_id,
+    $stateparams = [
+        'activityId' => $lessonactivityid,
         'agent' => [
-            'account' => $statement_builder->build_course_actor($seo->learner)['account'],
+            'account' => $statementbuilder->build_course_actor($seo->learner)['account'],
         ],
     ];
 
-    // get the lesson activity state.
-    $state_params['stateId'] = $activity_state_id;
-    $activity_state = $lrs_api->activity_states()->get_resource()->with_query_params($state_params);
+    // Get the lesson activity state.
+    $stateparams['stateId'] = $activitystateid;
+    $activitystate = $lrsapi->activity_states()->get_resource()->with_query_params($stateparams);
 
-    //   if it does not exists then we need to create a new one - later.
-    if (!$activity_state) {
-        $activity_state = [ 'attempts' => [], 'seo' => $lesson ];
-        $activity_exists = false;
+    // If it does not exists then we need to create a new one - later.
+    if (!$activitystate) {
+        $activitystate = [ 'attempts' => [], 'seo' => $lesson ];
+        $activityexists = false;
     }
 
-
-    // Set the attempt details for this session
-    $current_attempt_state = [ 'title' => $lesson->title ];
-    if (isset($lesson->runtime->location)) $current_attempt_state['location'] = $lesson->runtime->location;
+    // Set the attempt details for this session.
+    $currentattemptstate = [ 'title' => $lesson->title ];
+    if (isset($lesson->runtime->location)) {
+        $currentattemptstate['location'] = $lesson->runtime->location;
+    }
     if (isset($lesson->timeTracked)) {
-        $current_attempt_state['total_time'] = 
-            $statement_builder->get_iso8601_duration($statement_builder->get_duration_seconds($lesson->timeTracked));
+        $currentattemptstate['total_time'] =
+            $statementbuilder->get_iso8601_duration($statementbuilder->get_duration_seconds($lesson->timeTracked));
     }
-
 
     // Has this lesson been attempted for this course attempt?
-    $has_been_attempted = array_key_exists($lesson_activity_id, $current_state['lessons']);
-    if ($has_been_attempted) {
+    $hasbeenattempted = array_key_exists($lessonactivityid, $currentstate['lessons']);
+    if ($hasbeenattempted) {
         // If the lesson activity has been attempted, then we need to find out the disposition of this attempt.
 
-        // get lesson attempt diff
-        $lesson_attempts = $current_state['lessons'][$lesson_activity_id];
-        $attempt_diff = intval($lesson->attempts) - count($lesson_attempts);
+        // Get lesson attempt diff.
+        $lessonattempts = $currentstate['lessons'][$lessonactivityid];
+        $attemptdiff = intval($lesson->attempts) - count($lessonattempts);
 
-        if ($attempt_diff === 0) {
+        if ($attemptdiff === 0) {
             // This is the most recent existing attempt. Just update attempt.
-            $registration_id = end($lesson_attempts);
-            $is_new_attempt = false;
+            $registrationid = end($lessonattempts);
+            $isnewattempt = false;
 
-            // The activity state and attempt state should already exist
-            //  Get the the attempt state to update it with new states.
-            $state_params['stateId'] = $attempt_state_id;
-            $state_params['registration'] = $registration_id;
-            $attempt_state = $lrs_api->activity_states()->get_resource()->with_query_params($state_params);
-            if (!$attempt_state) throw new ErrorException("No attempt state for lesson registration {$registration_id}");
+            // The activity state and attempt state should already exist.
+            // Get the the attempt state to update it with new states.
+            $stateparams['stateId'] = $attemptstateid;
+            $stateparams['registration'] = $registrationid;
+            $attemptstate = $lrsapi->activity_states()->get_resource()->with_query_params($stateparams);
+            if (!$attemptstate) {
+                throw new ErrorException("No attempt state for lesson registration {$registrationid}");
+            }
 
             // If the new 'total_time' is not equal to the last 'total_time', then it can be assumed something happened in this lesson.
-            if ($attempt_state['total_time'] !== $current_attempt_state['total_time']) {
-                // Check for assessment interactions in this lesson
-                $interaction_state = get_interaction_attempt_states($lesson, $registration_id, $attempt_state, $seo);
-                $current_state['statements'] = array_merge($current_state['statements'], $interaction_state['statements']);
-                $current_attempt_state['assessment'] = $interaction_state['assessment'];
+            if ($attemptstate['total_time'] !== $currentattemptstate['total_time']) {
+                // Check for assessment interactions in this lesson.
+                $interactionstate = get_interaction_attempt_states($lesson, $registrationid, $attemptstate, $seo);
+                $currentstate['statements'] = array_merge($currentstate['statements'], $interactionstate['statements']);
+                $currentattemptstate['assessment'] = $interactionstate['assessment'];
 
-                // create the any new statements and attempt states for this lesson attempt.
-                // [ 'statements' => [<statements>], 'lesson_states' => [ 'intialized' => true, ... ] ];
-                $lesson_state = get_lesson_attempt_states(
-                    $lesson, $registration_id, $attempt_state['lesson_states'], $seo, $lrs_api);
-                $current_state['statements'] = array_merge($current_state['statements'], $lesson_state['statements']);
-                
-                // update the attempt state with new states.
-                $current_attempt_state['lesson_states'] = $lesson_state['lesson_states'];
-                $attempt_state = $lrs_api->activity_states()
-                    ->update_resource($current_attempt_state)
-                    ->with_query_params($state_params);
+                // Create the any new statements and attempt states for this lesson attempt.
+
+                $lessonstate = get_lesson_attempt_states(
+                    $lesson, $registrationid, $attemptstate['lesson_states'], $seo, $lrsapi);
+                $currentstate['statements'] = array_merge($currentstate['statements'], $lessonstate['statements']);
+
+                // Update the attempt state with new states.
+                $currentattemptstate['lesson_states'] = $lessonstate['lesson_states'];
+                $attemptstate = $lrsapi->activity_states()
+                    ->update_resource($currentattemptstate)
+                    ->with_query_params($stateparams);
             }
         }
     } else {
         // This lesson activity has never been attempted for this course attempt.
 
         // Add the lesson id to the course attempts
-        $current_state['lessons'][$lesson_activity_id] = [];
-        $attempt_diff = intval($lesson->attempts);
+        $currentstate['lessons'][$lessonactivityid] = [];
+        $attemptdiff = intval($lesson->attempts);
     }
 
-    if ($is_new_attempt) {
-        if ($has_been_attempted) {
+    if ($isnewattempt) {
+        if ($hasbeenattempted) {
             // If there is an attempt from a previous session it can be terminated.
-            // get the last entry in the course attempt state for this lesson id.
-            $last_attempt_id = end($current_state['lessons'][$lesson_activity_id]);
+            // Get the last entry in the course attempt state for this lesson id.
+            $lastattemptid = end($currentstate['lessons'][$lessonactivityid]);
 
-            // get the attempt state
-            $state_params['stateId'] = $attempt_state_id;
-            $state_params['registration'] = $last_attempt_id;
-            $last_attempt_state = $lrs_api->activity_states()->get_resource()->with_query_params($state_params);
+            // Get the attempt state
+            $stateparams['stateId'] = $attemptstateid;
+            $stateparams['registration'] = $lastattemptid;
+            $lastattemptstate = $lrsapi->activity_states()->get_resource()->with_query_params($stateparams);
 
-            if (!array_key_exists('terminated', $last_attempt_state['lesson_states'])) {
-                $last_attempt_state['lesson_states']['terminated'] = true;
-                $lrs_api->activity_states()->update_resource($last_attempt_state)->with_query_params($state_params);
+            if (!array_key_exists('terminated', $lastattemptstate['lesson_states'])) {
+                $lastattemptstate['lesson_states']['terminated'] = true;
+                $lrsapi->activity_states()->update_resource($lastattemptstate)->with_query_params($stateparams);
 
-                $current_state['statements'][] = $statement_builder->build_lesson_terminate_statement(
-                    $last_attempt_state, $lesson_activity_id, $last_attempt_id, $seo);
+                $currentstate['statements'][] = $statementbuilder->build_lesson_terminate_statement(
+                    $lastattemptstate, $lessonactivityid, $lastattemptid, $seo);
             }
         }
 
-        if ($attempt_diff > 1) {
-            // If there was more than 1 attempt made in this session, then we have missing attempts and
-            //  must at least account for their initialization and termination before the current attempt.
-            $state_params['stateId'] = $attempt_state_id;
+        if ($attemptdiff > 1) {
+            // If there was more than 1 attempt made in this session, then we have missing attempts and.
+            // Must at least account for their initialization and termination before the current attempt.
+            $stateparams['stateId'] = $attemptstateid;
 
-            $missing_attempts = create_missing_attempts(
-                $lesson, $attempt_diff - 1, $state_params, $lrs_api, $seo);
-            $current_state['statements'] = array_merge($current_state['statements'], $missing_attempts['statements']);
-            $current_state['lessons'][$lesson_activity_id] =
-                array_merge($current_state['lessons'][$lesson_activity_id], $missing_attempts['attempts']);
+            $missingattempts = create_missing_attempts(
+                $lesson, $attemptdiff - 1, $stateparams, $lrsapi, $seo);
+            $currentstate['statements'] = array_merge($currentstate['statements'], $missingattempts['statements']);
+            $currentstate['lessons'][$lessonactivityid] =
+                array_merge($currentstate['lessons'][$lessonactivityid], $missingattempts['attempts']);
         }
 
-        // add the lesson initialize statement
-        $current_state['statements'][] = $statement_builder->build_lesson_initialize_statement($lesson, $registration_id, $seo);
+        // Add the lesson initialize statement.
+        $currentstate['statements'][] = $statementbuilder->build_lesson_initialize_statement($lesson, $registrationid, $seo);
 
-        // add to the lesson activity state attempts
-        $activity_state['attempts'][] = $registration_id;
+        // Add to the lesson activity state attempts.
+        $activitystate['attempts'][] = $registrationid;
 
-        // add to course lesson id attempts
-        $current_state['lessons'][$lesson_activity_id][] = $registration_id;
+        // Add to course lesson id attempts.
+        $currentstate['lessons'][$lessonactivityid][] = $registrationid;
 
-        // Check for assessment interactions in this lesson
-        $interaction_state = get_interaction_attempt_states($lesson, $registration_id, [], $seo);
-        $current_state['statements'] = array_merge($current_state['statements'], $interaction_state['statements']);
-        $current_attempt_state['assessment'] = $interaction_state['assessment'];
+        // Check for assessment interactions in this lesson.
+        $interactionstate = get_interaction_attempt_states($lesson, $registrationid, [], $seo);
+        $currentstate['statements'] = array_merge($currentstate['statements'], $interactionstate['statements']);
+        $currentattemptstate['assessment'] = $interactionstate['assessment'];
 
-        // get any lesson states and statements
-        $lesson_state = get_lesson_attempt_states($lesson, $registration_id, [ 'initialized' => true ], $seo, $lrs_api);
+        // Get any lesson states and statements
+        $lessonstate = get_lesson_attempt_states($lesson, $registrationid, [ 'initialized' => true ], $seo, $lrsapi);
 
-        // assign the new lesson states to the attempt state
-        $current_attempt_state['lesson_states'] = $lesson_state['lesson_states'];
+        // Assign the new lesson states to the attempt state.
+        $currentattemptstate['lesson_states'] = $lessonstate['lesson_states'];
 
-        // add the new lesson state statements
-        $current_state['statements'] = array_merge($current_state['statements'], $lesson_state['statements']);
+        // Add the new lesson state statements.
+        $currentstate['statements'] = array_merge($currentstate['statements'], $lessonstate['statements']);
 
-        // create the new attempt state.
-        $state_params['stateId'] = $attempt_state_id;
-        $state_params['registration'] = $registration_id;
-        $attempt_state = $lrs_api->activity_states()->create_resource($current_attempt_state)->with_query_params($state_params);
+        // Create the new attempt state.
+        $stateparams['stateId'] = $attemptstateid;
+        $stateparams['registration'] = $registrationid;
+        $attemptstate = $lrsapi->activity_states()->create_resource($currentattemptstate)->with_query_params($stateparams);
     }
 
-    // if there was no lesson activity state for this lesson id create it, otherwise update it.
-    $state_params['stateId'] = $activity_state_id;
-    unset($state_params['registration']);
+    // If there was no lesson activity state for this lesson id create it, otherwise update it.
+    $stateparams['stateId'] = $activitystateid;
+    unset($stateparams['registration']);
 
-    if ($activity_exists) {
-        $lrs_api->activity_states()->update_resource($activity_state)->with_query_params($state_params);
+    if ($activityexists) {
+        $lrsapi->activity_states()->update_resource($activitystate)->with_query_params($stateparams);
     } else {
-        $lrs_api->activity_states()->create_resource($activity_state)->with_query_params($state_params);
+        $lrsapi->activity_states()->create_resource($activitystate)->with_query_params($stateparams);
     }
 
-    return $current_state;
+    return $currentstate;
 }
 
-function create_missing_attempts($lesson, $missing_attempt_count, $state_params, $lrs_api, $seo) {
+function create_missing_attempts($lesson, $missingattemptcount, $stateparams, $lrsapi, $seo) {
     $statements = [];
     $attempts = [];
-    $statement_builder = new xapi\StatementBuilder();
+    $statementbuilder = new xapi\StatementBuilder();
 
-    foreach(range(1, $missing_attempt_count) as $missing_attempt) {
-        $registration_id = uuid();
+    foreach (range(1, $missingattemptcount) as $missingattempt) {
+        $registrationid = uuid();
 
-        // add registration id to attempts.
-        $attempts[] = $registration_id;
-        
-        $state_params['registration'] = $registration_id;
-        $missing_lesson_attempt_state = [
+        // Add registration id to attempts.
+        $attempts[] = $registrationid;
+
+        $stateparams['registration'] = $registrationid;
+        $missinglessonattemptstate = [
             'total_time' => 'PT0S',
             'lesson_states' => [ 'initialized' => true, 'terminated' => true ]
         ];
-        $lrs_api->activity_states()
-            ->create_resource($missing_lesson_attempt_state)
-            ->with_query_params($state_params);
+        $lrsapi->activity_states()
+            ->create_resource($missinglessonattemptstate)
+            ->with_query_params($stateparams);
 
-        // add initialize statement.
-        $statements[] = $statement_builder->build_lesson_initialize_statement($lesson, $registration_id, $seo);
+        // Add initialize statement.
+        $statements[] = $statementbuilder->build_lesson_initialize_statement($lesson, $registrationid, $seo);
 
-        // add terminate statement.
-        $statements[] = $statement_builder->build_lesson_terminate_statement(
-            $missing_lesson_attempt_state, $state_params['activityId'], $registration_id, $seo);
+        // Add terminate statement.
+        $statements[] = $statementbuilder->build_lesson_terminate_statement(
+            $missinglessonattemptstate, $stateparams['activityId'], $registrationid, $seo);
     }
 
     return [ 'statements' => $statements, 'attempts' => $attempts ];
 }
 
-function get_lesson_attempt_states($lesson, $registration_id, $lesson_states, $seo, $lrs_api) {
+function get_lesson_attempt_states($lesson, $registrationid, $lessonstates, $seo, $lrsapi) {
     $statements = [];
-    $new_lesson_states = $lesson_states;
-    $statement_builder = new xapi\StatementBuilder();
+    $newlessonstates = $lessonstates;
+    $statementbuilder = new xapi\StatementBuilder();
 
-    // resumed.
-    // lesson.rumtime.entry = 'resume'.
-    if ($lesson->runtime->entry === 'resume' && array_key_exists('suspended', $lesson_states)) {
-        $statements[] = $statement_builder->build_lesson_resumed_statement($lesson, $registration_id, $seo);
-        $new_lesson_states['resumed'] = true;
+    // Resumed.
+    // Lesson.rumtime.entry = 'resume'.
+    if ($lesson->runtime->entry === 'resume' && array_key_exists('suspended', $lessonstates)) {
+        $statements[] = $statementbuilder->build_lesson_resumed_statement($lesson, $registrationid, $seo);
+        $newlessonstates['resumed'] = true;
     }
 
-    // scored
-    // lesson.runtime.scoreScaled is set there is something in there and there either
-    //      no lesson_states.scored or lesson_states.score !== lesson.runtime.scoreScaled
+    // Scored
+    // Lesson.runtime.scoreScaled is set there is something in there and there either.
+    // No lesson_states.scored or lesson_states.score !== lesson.runtime.scoreScaled.
     if (isset($lesson->runtime->scoreScaled) && $lesson->runtime->scoreScaled && (
-            !array_key_exists('scored', $lesson_states) || (array_key_exists('score', $lesson_states) && (
-                $lesson_states['score'] !== $lesson->runtime->scoreScaled)))
+            !array_key_exists('scored', $lessonstates) || (array_key_exists('score', $lessonstates) && (
+                $lessonstates['score'] !== $lesson->runtime->scoreScaled)))
     ) {
-        $statements[] = $statement_builder->build_lesson_scored_statement(
-            $lesson, $lesson->runtime->scoreScaled, $registration_id, $seo);
-        $new_lesson_states['scored'] = true;
-        $new_lesson_states['score'] = $lesson->runtime->scoreScaled;
+        $statements[] = $statementbuilder->build_lesson_scored_statement(
+            $lesson, $lesson->runtime->scoreScaled, $registrationid, $seo);
+        $newlessonstates['scored'] = true;
+        $newlessonstates['score'] = $lesson->runtime->scoreScaled;
     }
 
-
-    // passed.
-    // lesson->activitySuccess is 'PASSED' and lesson_states.success is not set or
-    //  lesson_states.success is 'FAILED'
+    // Passed.
+    // Lesson->activitySuccess is 'PASSED' and lesson_states.success is not set or.
+    // Lesson_states.success is 'FAILED'.
     if ($lesson->activitySuccess === 'PASSED' && (
-            !array_key_exists('success', $lesson_states) || $lesson_states['success'] !== 'PASSED')
+            !array_key_exists('success', $lessonstates) || $lessonstates['success'] !== 'PASSED')
     ) {
-        $statements[] = $statement_builder->build_lesson_passed_statement($lesson, $registration_id, $seo);
-        $new_lesson_states['success'] = 'PASSED';
+        $statements[] = $statementbuilder->build_lesson_passed_statement($lesson, $registrationid, $seo);
+        $newlessonstates['success'] = 'PASSED';
     }
 
-
-    // failed
-    // lesson->activitySuccess is 'FAILED' and lesson_states.success is not set or
-    //  lesson_states.success is 'PASSED'
+    // Failed
+    // Lesson->activitySuccess is 'FAILED' and lesson_states.success is not set or.
+    // Lesson_states.success is 'PASSED'.
     if ($lesson->activitySuccess === 'FAILED' && (
-            !array_key_exists('success', $lesson_states) || $lesson_states['success'] !== 'FAILED')
+            !array_key_exists('success', $lessonstates) || $lessonstates['success'] !== 'FAILED')
     ) {
-        $statements[] = $statement_builder->build_lesson_failed_statement($lesson, $registration_id, $seo);
-        $new_lesson_states['success'] = 'FAILED';
+        $statements[] = $statementbuilder->build_lesson_failed_statement($lesson, $registrationid, $seo);
+        $newlessonstates['success'] = 'FAILED';
     }
 
-
-    // completed.
-    // lesson.activityCompletion is 'COMPLETE' and lesson_states.completed is not set.
-    if ($lesson->activityCompletion === 'COMPLETED' && !array_key_exists('completed', $lesson_states)) {
-        $statements[] = $statement_builder->build_lesson_completed_statement($lesson, $registration_id, $seo);
-        $new_lesson_states['completed'] = true;
+    // Completed.
+    // Lesson.activityCompletion is 'COMPLETE' and lesson_states.completed is not set.
+    if ($lesson->activityCompletion === 'COMPLETED' && !array_key_exists('completed', $lessonstates)) {
+        $statements[] = $statementbuilder->build_lesson_completed_statement($lesson, $registrationid, $seo);
+        $newlessonstates['completed'] = true;
     }
 
-    // suspended.
-    // lesson.runtime.exit = 'suspend' 
+    // Suspended.
+    // Lesson.runtime.exit = 'suspend'.
     if ($lesson->runtime->exit === 'suspend') {
-        $statements[] = $statement_builder->build_lesson_suspended_statement($lesson, $registration_id, $seo);
-        $new_lesson_states['suspended'] = true;
+        $statements[] = $statementbuilder->build_lesson_suspended_statement($lesson, $registrationid, $seo);
+        $newlessonstates['suspended'] = true;
     }
-    
-    return [ 'statements' => $statements, 'lesson_states' => $new_lesson_states ];
+
+    return [ 'statements' => $statements, 'lesson_states' => $newlessonstates ];
 }
 
-?>
