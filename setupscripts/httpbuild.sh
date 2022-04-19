@@ -19,4 +19,6 @@ else
 	cp -f /etc/httpd/httpd-http.conf /etc/httpd/conf/httpd.conf
 fi
 
+sed -i -e "s/{WEB_HOSTNAME}/$WEB_HOSTNAME/g" /etc/httpd/conf/httpd.conf
+
 echo "HTTPD Built"
