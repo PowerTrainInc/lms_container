@@ -30,6 +30,11 @@ $CFG->dboptions = array (
 
 $CFG->wwwroot   = getenv('WEB_HOSTNAME');
 
+//Navy infrastructure requirement
+$CFG->reverseproxy = true;
+$CFG->sslproxy = true;
+
+
 // Moodledata location //
 $CFG->dataroot = '/opt/app-root/data';
 $CFG->tempdir = '/opt/app-root/data/temp';
