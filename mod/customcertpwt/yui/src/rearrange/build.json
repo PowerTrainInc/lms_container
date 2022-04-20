@@ -1,0 +1,10 @@
+{
+  "name": "moodle-mod_customcertpwt-rearrange",
+  "builds": {
+    "moodle-mod_customcertpwt-rearrange": {
+      "jsfiles": [
+        "rearrange.js"
+      ]
+    }
+  }
+}
