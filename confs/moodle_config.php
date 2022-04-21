@@ -31,7 +31,13 @@ $CFG->dboptions = array (
 $CFG->wwwroot   = getenv('WEB_HOSTNAME');
 
 //Navy infrastructure requirement
-$CFG->reverseproxy = true;
+if(getenv('REVERSE_PROXY_TOGGLE') == 1){
+	$CFG->reverseproxy = true;
+} else {
+	//Do nothing
+}
+
+//Navy infrastructure requirement
 $CFG->sslproxy = true;
 
 
