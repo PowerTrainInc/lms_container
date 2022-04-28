@@ -63,11 +63,11 @@ class backup_customcertpwt_activity_task extends backup_activity_task {
 
         // Link to the list of customcertpwts.
         $search = "/(".$base."\/mod\/customcertpwt\/index.php\?id\=)([0-9]+)/";
-        $content = preg_replace($search, '$@customcertpwtINDEX*$2@$', $content);
+        $content = preg_replace($search, '$@CUSTOMCERTPWTINDEX*$2@$', $content);
 
         // Link to customcertpwt view by moduleid.
         $search = "/(".$base."\/mod\/customcertpwt\/view.php\?id\=)([0-9]+)/";
-        $content = preg_replace($search, '$@customcertpwtVIEWBYID*$2@$', $content);
+        $content = preg_replace($search, '$@CUSTOMCERTPWTVIEWBYID*$2@$', $content);
 
         return $content;
     }

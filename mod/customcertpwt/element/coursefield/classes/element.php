@@ -101,9 +101,8 @@ class element extends \mod_customcertpwt\element {
      * drag and drop interface to position it.
      */
     public function render_html() {
-        global $COURSE;
-
-        return \mod_customcertpwt\element_helper::render_html_content($this, $this->get_course_field_value($COURSE, true));
+        return \mod_customcertpwt\element_helper::render_html_content($this, $this->name . ' ' .
+            get_string('pluginname', 'customcertpwtelement_coursefield'));
     }
 
     /**
