@@ -461,10 +461,16 @@ class auth_plugin_cacpwt extends auth {
         }
 
         // Set import batch to work from.
-        $batch = 'auth_cacpwt_import_' . get_config('auth_cacpwt', 'batch');
+        $batch = get_config('auth_cacpwt', 'batch');
+
+        if (!$batch || empty($batch)) {
+            $batch = 'even';
+        }
+
+        $importtable = 'auth_cacpwt_import_' . $batch;
 
         // If no matching DODID found, display a no access page with instructions.
-        if (!$DB->record_exists($batch, array('dodid' => $cacid))) {
+        if (!$DB->record_exists($importtable, array('dodid' => $cacid))) {
             // The following content needs to be revised/updated for no access content.
             $mform = new cacpwt_noaccess();
 
@@ -530,6 +536,11 @@ class auth_plugin_cacpwt extends auth {
 
                     // Get import batch table info.
                     $batch = get_config('auth_cacpwt', 'batch');
+
+                    if (!$batch || empty($batch)) {
+                        $batch = 'even';
+                    }
+
                     $importtable = 'auth_cacpwt_import_' . $batch;
 
                     unset($batch);
